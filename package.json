@@ -1,0 +1,31 @@
+{
+  "name": "team-vibecoding",
+  "version": "1.0.0",
+  "description": "OpenCode Team AI collaboration superpowers — commands, skills, and rules for structured development workflow",
+  "bin": {
+    "team-vibecoding": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "commands/",
+    "skills/",
+    "rules/"
+  ],
+  "keywords": [
+    "opencode",
+    "openspec",
+    "team",
+    "ai",
+    "superpowers",
+    "vibecoding"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LevisBale0824/team-vibecoding.git"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

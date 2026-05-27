@@ -1,6 +1,6 @@
 # Team Vibecoding
 
-OpenCode Superpowers for structured team AI collaboration with OpenSpec.
+OpenCode Team AI collaboration superpowers — commands, skills, and rules for structured development workflow with OpenSpec.
 
 ## What's Inside
 
@@ -10,13 +10,46 @@ OpenCode Superpowers for structured team AI collaboration with OpenSpec.
 
 ## Quick Start
 
-Install into your project's `.opencode` directory:
-
 ```bash
-cp -r commands rules skills /path/to/your-project/.opencode/
+# Default: install to project/.opencode/
+npx team-vibecoding /path/to/my-project
+
+# Custom target directory
+npx team-vibecoding /path/to/my-project --target .zero
+
+# Global install (anywhere on disk)
+npx team-vibecoding --commands ~/.zerorules/workflows --skills ~/.zeroagent/skills --rules ~/.zerorules
+
+# Preview before installing
+npx team-vibecoding /path/to/my-project --dry-run
+
+# Overwrite existing files
+npx team-vibecoding /path/to/my-project --force
 ```
 
-Or use the install script (coming soon).
+## Usage
+
+```
+npx team-vibecoding [<project>] [options]
+
+Options:
+  -t, --target <name>    Base directory under <project> (default: ".opencode")
+  -c, --commands <path>  Target path for commands
+  -s, --skills <path>    Target path for skills
+  -r, --rules <path>     Target path for rules
+      --dry-run           Preview without writing files
+  -f, --force             Overwrite existing files
+  -h, --help              Show help
+  -v, --version           Show version
+```
+
+### Path resolution
+
+| `--commands` value | Resolves to |
+|---|---|
+| *(not set)* | `<project>/<target>/commands/` |
+| `workflows` (relative) | `<project>/<target>/workflows/` |
+| `~/.zerorules/wf` (absolute) | `/home/user/.zerorules/wf/` |
 
 ## Workflow
 
@@ -35,6 +68,7 @@ Or use the install script (coming soon).
 
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) initialized in the target project
 - [OpenCode](https://github.com/anthropics/opencode) CLI
+- Node.js >= 16
 
 ## License
 
