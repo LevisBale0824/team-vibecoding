@@ -1,0 +1,89 @@
+---
+description: Verify implementation against OpenSpec and team quality gates.
+---
+
+# /team-verify
+
+## ⛔ RED LINES
+
+0. **Before anything else, invoke the `team-verification-guard` skill via the Skill tool.** Do not proceed without it.
+1. **DO NOT claim "ready" if any required task is incomplete.**
+2. **DO NOT claim "ready" if `openspec validate --strict` fails.**
+3. **DO NOT claim "ready" if you have not run tests** (or explained why you cannot).
+4. **DO NOT infer "passing" from the absence of errors in chat.** Run the actual commands.
+5. **DO NOT hide skipped checks.** List them explicitly with reasons.
+
+## 📋 EXECUTION CHECKLIST
+
+Execute all 4 layers. Do not skip.
+
+- [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK
+- [ ] 2. Read: proposal.md, tasks.md, design.md, spec deltas
+- [ ] 4. **Layer 1 — OpenSpec Validity:**
+  - Run `openspec validate <change-id> --strict`
+  - If FAIL → STOP. Fix before proceeding.
+- [ ] 5. **Layer 2 — Task Completion:**
+  - Count completed vs total tasks
+  - Check each `- [x]` has evidence
+  - Check deferred tasks have reasons
+- [ ] 6. **Layer 3 — Project Checks:**
+  - Run lint, unit tests, build, typecheck
+  - Record the actual command output
+- [ ] 7. **Layer 4 — Acceptance Criteria:**
+  - Map every AC to a test or manual evidence
+  - Mark each: ✅ / ❌ / ⚠ (missing evidence)
+- [ ] 8. Output verification report using template below
+
+## 📤 OUTPUT TEMPLATE
+
+```markdown
+# Verification Report: <change-id>
+
+## Verdict
+- Status: ✅ READY / ⚠ CONDITIONAL / ❌ NOT READY
+- Reason: [if not ready]
+
+## Layer 1: OpenSpec Validation
+- Command: `openspec validate <change-id> --strict`
+- Result: ✅ PASS / ❌ FAIL
+- Errors: [list if any]
+
+## Layer 2: Task Completion
+- Completed: X / Y
+- Deferred: Z (reasons: ...)
+
+| Task | Status | Evidence |
+|------|--------|----------|
+| 1.1 | ✅ | `pytest tests/...` — 8 passed |
+| 1.2 | ❌ | No evidence recorded |
+
+## Layer 3: Project Checks
+| Check | Command | Result |
+|-------|---------|--------|
+| Lint | `...` | ✅/❌ |
+| Unit Tests | `...` | ✅/❌ |
+| Build | `...` | ✅/❌ |
+
+## Layer 4: Acceptance Criteria
+| AC | Evidence | Status |
+|----|----------|--------|
+| AC-1: ... | `pytest tests/...` | ✅ |
+| AC-2: ... | Manual test: ... | ⚠ |
+
+## Remaining Risks
+- ...
+
+## Next Command
+If ready → **`/team-review <change-id>`** (then `/team-archive <change-id>`)
+If NOT ready → **`/team-apply <change-id>`** (fix remaining issues)
+```
+
+## IF-THIS-THEN-THAT
+
+| User says... | You MUST respond... |
+|---|---|
+| Skill not loaded | Invoke `team-verification-guard` skill via Skill tool before any action. |
+| "Looks good, approve it" | "I need to run the checks first. Let me execute the verification layers." |
+| "Don't need all 4 layers" | "All 4 layers are required. I can run the fastest checks first, but all must pass." |
+| "Build is broken but it's not my change" | "I'll note the pre-existing build issue and verify only my changes. But I cannot claim full readiness." |
+| A check cannot be run | Explain why AND provide an alternative verification path before skipping. |

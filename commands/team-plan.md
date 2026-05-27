@@ -1,0 +1,63 @@
+---
+description: Review and strengthen task breakdown before implementation.
+---
+
+# /team-plan
+
+## ⛔ RED LINES
+
+- **Before anything else, invoke the `team-planning-guard` skill via the Skill tool.** Do not proceed without it.
+- **DO NOT implement anything.** This phase is review only.
+- **DO NOT proceed to /team-apply** if there are unresolved hard-blocking open questions.
+- **DO NOT accept tasks without verification methods.** Every task MUST have a verifiable check.
+
+## 📋 EXECUTION CHECKLIST
+
+- [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK user to pick
+- [ ] 2. Read all artifacts: proposal.md, design.md (if exists), tasks.md, spec deltas
+- [ ] 4. Check task granularity: each task ≤ 1 hour
+- [ ] 5. Check task dependencies: no circular dependencies, correct ordering
+- [ ] 6. Check verification: every task has a specific command or scenario
+- [ ] 7. Check requirement linkage: every task links to a requirement
+- [ ] 8. Check open questions: all hard blockers resolved?
+- [ ] 9. If tasks need splitting/merging → update tasks.md
+- [ ] 10. Output review summary
+
+## 📤 OUTPUT TEMPLATE
+
+```markdown
+# Plan Review: <change-id>
+
+## Task Quality
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Granularity (≤1h) | ✅/❌ | ... |
+| Dependency order | ✅/❌ | ... |
+| Verification methods | ✅/❌ | ... |
+| Requirement linkage | ✅/❌ | ... |
+
+## Open Questions Status
+- [x] Resolved: ...
+- [ ] Still open (🟡 soft): ...
+
+## Changes Made to tasks.md
+- ...
+
+## Verdict
+- [ ] Ready
+- [ ] Needs fixes before implementation (see above)
+
+## Next Command
+If ready → **`/team-apply <change-id>`**
+If not ready → fix issues above, then re-run **`/team-plan <change-id>`**
+```
+
+## IF-THIS-THEN-THAT
+
+| User says... | You MUST respond... |
+|---|---|
+| "Tasks look fine, let's start" | "Let me verify: each task has a verifiable check and takes ≤1 hour? [re-check]" |
+| Skill not loaded | Invoke `team-planning-guard` skill via Skill tool before any action. |
+| "Skip the review" | "I cannot skip plan review. Bad task breakdown causes rework during implementation." |
+| Task is "Implement X" (too big) | "That task is too large. Let me break it into 2-3 subtasks with clear verification steps." |

@@ -1,0 +1,66 @@
+---
+description: Team AI delivery rules for OpenSpec, Superpowers, custom commands and skills.
+---
+
+# Team AI Delivery Rules
+
+## Workflow
+
+For non-trivial feature work, behavior changes, API changes, data model changes, security-sensitive changes, or cross-module refactoring:
+
+1. **Start with OpenSpec** — never skip to implementation
+2. **Create or update changes** under `openspec/changes/<id>/`
+3. **Do NOT implement** before proposal, tasks, and spec deltas are reviewed
+4. **Use team commands** (in order):
+   - `/team-explore` — explore requirements
+   - `/team-propose` — create proposal
+   - `/team-plan` — review task breakdown
+   - `/team-apply` — implement tasks
+   - `/team-verify` — verify completion
+   - `/team-review` — pre-merge code review
+   - `/team-archive` — archive change
+   - `/team-retro` — retrospect and improve skills
+
+## Core Constraints
+
+- **Do NOT implement without an OpenSpec change.** Propose first, then implement.
+- **Do NOT skip verification.** Every task must have evidence before being marked complete.
+- **Do NOT expand scope.** If you discover missing requirements, update OpenSpec before continuing.
+- **Do NOT proceed with unresolved hard blockers.** Open questions affecting API fields, permissions, security, data migration, or backward compatibility must be resolved first.
+- **Provide evidence before claiming completion.** Run the actual commands — do not infer "passing" from chat history.
+
+## Format Requirements
+
+All OpenSpec artifacts MUST use English headers as required by `openspec validate --strict`:
+- Proposal: `## Why`, `## What Changes`, `## Capabilities`, `## Impact`
+- Spec delta: `## ADDED/MODIFIED/REMOVED/RENAMED Requirements`, `### Requirement:`, `#### Scenario:`, `WHEN`/`THEN`
+- Every requirement MUST contain `SHALL` or `MUST`
+
+See `team-openspec-guard` skill for full format specifications.
+
+## Skippable Steps
+
+| Step | Can Skip? | Condition |
+|------|-----------|-----------|
+| `/team-explore` | Yes | Problem is already clear, change-id is decided |
+| `/team-plan` | Yes | Simple change, single file, no dependency concerns |
+| `/team-review` | Yes | Solo project, small change |
+| `/team-retro` | Yes | Optional but recommended — prevents repeat mistakes |
+| `/team-propose` | **No** | Required for all changes |
+| `/team-apply` | **No** | Required for all changes |
+| `/team-verify` | **No** | Required for all changes |
+| `/team-archive` | **No** | Required for all changes |
+
+## File Locations
+
+- OpenSpec artifacts: `openspec/`
+- Commands: `.opencode/commands/`
+- Skills: `.opencode/skills/`
+- Rules: `.opencode/rules/`
+
+## Bad Case Feedback Loop
+
+When AI behavior deviates from skill rules:
+1. Record the Bad Case (scenario, wrong behavior, expected behavior)
+2. Run `/team-retro` to feed findings back into skills
+3. Update the affected skill's SKILL.md with new rules
