@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 协作全流程实战 — Lineage Viz Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES — VINTAGE EDITORIAL
+   =========================================== */
+:root {
+    --bg-cream: #f5f3ee;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555;
+    --text-muted: #999;
+    --accent-warm: #e8d4c0;
+    --accent-dark: #c4a882;
+    --border-light: rgba(0,0,0,0.06);
+    --border-medium: rgba(0,0,0,0.12);
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Work Sans', sans-serif;
+    --title-size: clamp(2.5rem, 7vw, 5.5rem);
+    --h2-size: clamp(1.6rem, 4vw, 3rem);
+    --h3-size: clamp(1rem, 2vw, 1.4rem);
+    --body-size: clamp(0.8rem, 1.4vw, 1.05rem);
+    --small-size: clamp(0.6rem, 0.9vw, 0.75rem);
+    --slide-padding: clamp(1.5rem, 5vw, 5rem);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===========================================
+   VIEWPORT FITTING
+   =========================================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow-x: hidden; background: var(--bg-cream); }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+.slide {
+    width: 100vw; height: 100vh; height: 100dvh;
+    overflow: hidden; scroll-snap-align: start;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; background: var(--bg-cream);
+}
+.slide-content {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: center;
+    max-height: 100%; overflow: hidden;
+    padding: var(--slide-padding);
+    max-width: min(92vw, 1100px); width: 100%;
+}
+
+/* ===========================================
+   GEOMETRIC DECORATIONS
+   =========================================== */
+.deco { position: absolute; pointer-events: none; }
+.deco-circle {
+    width: clamp(140px, 20vw, 320px);
+    height: clamp(140px, 20vw, 320px);
+    border: 2px solid var(--accent-warm);
+    border-radius: 50%; opacity: 0.5;
+}
+.deco-circle.tl { top: 5%; left: 5%; }
+.deco-circle.br { bottom: 5%; right: 5%; }
+.deco-line {
+    width: 2px; height: clamp(60px, 10vh, 140px);
+    background: var(--accent-warm); opacity: 0.4;
+}
+.deco-dot {
+    width: clamp(8px, 1vw, 12px); height: clamp(8px, 1vw, 12px);
+    background: var(--accent-warm); border-radius: 50%; opacity: 0.5;
+}
+
+/* ===========================================
+   TYPOGRAPHY
+   =========================================== */
+.section-label {
+    font-family: var(--font-body); font-size: var(--small-size);
+    text-transform: uppercase; letter-spacing: 0.3em;
+    color: var(--text-muted);
+    margin-bottom: clamp(0.5rem, 1.5vh, 1.2rem);
+    display: flex; align-items: center; gap: 1rem;
+}
+.section-label::before, .section-label::after {
+    content: ''; height: 1px; width: clamp(20px, 5vw, 60px);
+    background: var(--accent-warm);
+}
+
+.display-title {
+    font-family: var(--font-display); font-optical-sizing: auto;
+    font-weight: 900; font-size: var(--title-size);
+    color: var(--text-primary); line-height: 1.05;
+}
+.display-title .italic { font-weight: 400; font-style: italic; }
+
+.section-title {
+    font-family: var(--font-display); font-optical-sizing: auto;
+    font-weight: 700; font-size: var(--h2-size);
+    color: var(--text-primary); line-height: 1.1;
+    margin-bottom: clamp(0.3rem, 1vh, 0.6rem);
+}
+
+.sub-title {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: var(--h3-size); color: var(--text-primary);
+    margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem);
+}
+
+.subtitle {
+    font-family: var(--font-display); font-style: italic; font-weight: 400;
+    font-size: clamp(1rem, 2vw, 1.5rem); color: var(--text-secondary);
+}
+
+.body-text {
+    font-family: var(--font-body); font-size: var(--body-size);
+    color: var(--text-secondary); line-height: 1.7;
+}
+
+/* Rule */
+.rule {
+    width: clamp(40px, 8vw, 80px); height: 2px;
+    background: var(--accent-warm);
+    margin: clamp(0.4rem, 1.2vh, 0.8rem) 0;
+}
+.rule-center { margin-left: auto; margin-right: auto; }
+
+/* ===========================================
+   COMPONENTS
+   =========================================== */
+.fact-box {
+    display: inline-flex; gap: clamp(1.5rem, 4vw, 3rem);
+    border: 2px solid var(--text-primary);
+    padding: clamp(0.6rem, 1.5vh, 1rem) clamp(1rem, 3vw, 2rem);
+}
+.fact-box .fact { display: flex; flex-direction: column; align-items: center; }
+.fact-box .fact-num {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    color: var(--text-primary); line-height: 1;
+}
+.fact-box .fact-label {
+    font-family: var(--font-body); font-size: var(--small-size);
+    text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--text-muted); margin-top: 0.2rem;
+}
+
+.bullet-list {
+    list-style: none; display: flex; flex-direction: column;
+    gap: clamp(0.2rem, 0.6vh, 0.4rem);
+}
+.bullet-list li {
+    font-family: var(--font-body); font-size: var(--body-size);
+    color: var(--text-secondary); line-height: 1.55;
+    padding-left: clamp(1rem, 2vw, 1.5rem); position: relative;
+}
+.bullet-list li::before {
+    content: ''; position: absolute; left: 0; top: 0.6em;
+    width: clamp(5px, 0.5vw, 7px); height: clamp(5px, 0.5vw, 7px);
+    border-radius: 50%; background: var(--accent-warm);
+}
+
+.data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+}
+.data-table th {
+    text-align: left; font-weight: 600;
+    padding: clamp(0.3rem, 0.6vh, 0.5rem) clamp(0.4rem, 0.8vw, 0.6rem);
+    border-bottom: 2px solid var(--text-primary); color: var(--text-primary);
+}
+.data-table td {
+    padding: clamp(0.2rem, 0.5vh, 0.35rem) clamp(0.4rem, 0.8vw, 0.6rem);
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-secondary); vertical-align: top;
+}
+.tag {
+    display: inline-block; padding: 0.1rem 0.4rem; border-radius: 2px;
+    font-size: clamp(0.55rem, 0.7vw, 0.65rem); font-weight: 600;
+}
+.tag-pass { background: #d4edda; color: #1a5a2a; }
+.tag-warn { background: #fff3cd; color: #6b5a1a; }
+
+.code-block {
+    background: #1e1e1e; color: #d4d4d4;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(0.58rem, 0.82vw, 0.75rem);
+    padding: clamp(0.5rem, 1.2vh, 0.8rem) clamp(0.6rem, 1.2vw, 1rem);
+    border-radius: 6px; line-height: 1.5;
+    white-space: pre; overflow-x: auto;
+    overflow: hidden; max-height: min(36vh, 260px);
+}
+.code-block .kw { color: #569cd6; }
+.code-block .str { color: #ce9178; }
+.code-block .cmt { color: #6a9955; }
+.code-block .fn { color: #dcdcaa; }
+.code-block .type { color: #4ec9b0; }
+.code-block .accent { color: #ff6b6b; }
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: clamp(0.4rem, 1vw, 0.7rem);
+}
+.feature-card {
+    padding: clamp(0.5rem, 1.2vh, 0.8rem) clamp(0.6rem, 1.2vw, 0.8rem);
+    border: 1px solid var(--accent-warm); border-radius: 4px;
+}
+.feature-card .fc-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(0.8rem, 1.2vw, 1rem); color: var(--text-primary);
+}
+.feature-card .fc-desc {
+    font-family: var(--font-body);
+    font-size: clamp(0.6rem, 0.82vw, 0.72rem);
+    color: var(--text-muted); margin-top: 0.1rem; line-height: 1.45;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.8rem, 2vw, 1.5rem); }
+
+.step-list {
+    list-style: none; display: flex; flex-direction: column;
+    gap: clamp(0.2rem, 0.6vh, 0.4rem);
+}
+.step-list li {
+    display: flex; align-items: baseline;
+    gap: clamp(0.3rem, 0.8vw, 0.6rem);
+    font-family: var(--font-body); font-size: var(--body-size);
+    color: var(--text-secondary); line-height: 1.45;
+}
+.step-num {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: var(--accent-dark); min-width: 1.6rem; text-align: right;
+}
+.step-arrow { color: var(--accent-dark); }
+
+.quote-block {
+    border-left: 3px solid var(--accent-warm);
+    padding-left: clamp(0.8rem, 1.5vw, 1.2rem);
+    font-family: var(--font-display); font-style: italic;
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    color: var(--text-secondary); line-height: 1.55;
+}
+
+/* Prompt bubble — shows user's original command */
+.prompt-bubble {
+    background: var(--text-primary); color: #f5f3ee;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+    padding: clamp(0.4rem, 1vh, 0.7rem) clamp(0.6rem, 1.2vw, 0.9rem);
+    border-radius: 6px; line-height: 1.5;
+    max-height: min(18vh, 120px); overflow: hidden;
+}
+
+/* AI response bubble */
+.ai-bubble {
+    border: 1px solid var(--accent-warm);
+    background: rgba(232, 212, 192, 0.12);
+    font-family: var(--font-body);
+    font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+    padding: clamp(0.3rem, 0.8vh, 0.5rem) clamp(0.5rem, 1vw, 0.7rem);
+    border-radius: 4px; color: var(--text-secondary);
+    line-height: 1.5;
+}
+.ai-bubble .ai-label {
+    font-weight: 600; color: var(--accent-dark);
+    font-size: clamp(0.5rem, 0.7vw, 0.6rem);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.2rem;
+}
+
+.page-num {
+    position: absolute; bottom: clamp(0.8rem, 2vh, 1.5rem);
+    right: clamp(1rem, 3vw, 3rem);
+    font-family: var(--font-display); font-style: italic;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    color: rgba(26,26,26,0.2);
+}
+.progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--accent-warm); z-index: 100;
+    transition: width 0.3s ease;
+}
+.nav-dots {
+    position: fixed; right: clamp(0.5rem, 1.2vw, 1rem);
+    top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column;
+    gap: clamp(4px, 0.5vh, 7px); z-index: 100;
+}
+.nav-dot {
+    width: clamp(5px, 0.5vw, 7px); height: clamp(5px, 0.5vw, 7px);
+    border-radius: 50%; background: rgba(26,26,26,0.12);
+    border: none; cursor: pointer; padding: 0;
+    transition: all 0.3s ease;
+}
+.nav-dot.active {
+    background: var(--accent-dark);
+    width: clamp(14px, 1.3vw, 20px); border-radius: 4px;
+}
+.keyboard-hint {
+    position: fixed; bottom: clamp(0.5rem, 1vh, 0.8rem);
+    left: 50%; transform: translateX(-50%);
+    font-family: var(--font-body);
+    font-size: clamp(0.45rem, 0.65vw, 0.55rem);
+    color: rgba(26,26,26,0.15);
+    text-transform: uppercase; letter-spacing: 0.1em; z-index: 100;
+}
+
+/* ===========================================
+   ANIMATIONS
+   =========================================== */
+.reveal {
+    opacity: 0; transform: translateY(18px);
+    transition: opacity 0.7s var(--ease-out-expo),
+                transform 0.7s var(--ease-out-expo);
+}
+.slide.visible .reveal { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.32s; }
+.reveal-d4 { transition-delay: 0.42s; }
+.reveal-d5 { transition-delay: 0.52s; }
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+@media (max-height: 700px) {
+    :root { --slide-padding: clamp(1rem, 3vw, 2.5rem); --title-size: clamp(2rem, 5.5vw, 3.5rem); }
+}
+@media (max-height: 600px) {
+    .nav-dots, .keyboard-hint, .deco { display: none; }
+    :root { --title-size: clamp(1.5rem, 4.5vw, 2.5rem); --body-size: clamp(0.65rem, 1.1vw, 0.8rem); }
+}
+@media (max-height: 500px) {
+    :root { --title-size: clamp(1.2rem, 3.5vw, 2rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+    html { scroll-behavior: auto; }
+}
+
+/* ===========================================
+   EDIT MODE
+   =========================================== */
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle {
+    position: fixed; top: 12px; left: 12px;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    z-index: 10001; background: var(--bg-cream);
+    border: 1px solid var(--border-medium); border-radius: 6px;
+    padding: 6px 12px; font-family: var(--font-body);
+    font-size: 13px; cursor: pointer; color: var(--text-primary);
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+.edit-toggle.active { background: var(--accent-warm); border-color: var(--accent-dark); }
+body.edit-active [contenteditable] { outline: 1px dashed var(--accent-warm); outline-offset: 2px; }
+body.edit-active [contenteditable]:focus { outline: 2px solid var(--accent-dark); }
+.edit-banner {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--accent-warm); font-family: var(--font-body);
+    font-size: 13px; text-align: center; padding: 8px;
+    z-index: 10002; transform: translateY(-100%); transition: transform 0.3s ease;
+    color: var(--text-primary);
+}
+.edit-banner.active { transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">Edit</button>
+<div class="edit-banner" id="editBanner">Edit mode — click text to edit — Ctrl+S to save</div>
+<div class="keyboard-hint">Arrow keys / Scroll to navigate</div>
+
+<!-- ===========================================
+     SLIDE 1: TITLE
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl"></div>
+    <div class="deco deco-dot" style="bottom:12%;left:8%"></div>
+    <div class="deco deco-line" style="bottom:calc(12% + 8px);left:calc(8% - 1px)"></div>
+    <div class="slide-content" style="text-align:center;align-items:center">
+        <p class="section-label reveal" style="justify-content:center">Case Study</p>
+        <h1 class="display-title reveal reveal-d1">AI 协作<br><span class="italic">全流程实战</span></h1>
+        <p class="subtitle reveal reveal-d2">Lineage Viz — 元数据血缘可视化桌面应用</p>
+        <div class="rule rule-center reveal reveal-d2"></div>
+        <p class="body-text reveal reveal-d3" style="max-width:500px;text-align:center">
+            从一句自然语言需求出发，历经 5 个阶段、7 次 Skill 加载、5 个环境障碍自修复<br>
+            最终交付 17 个任务、23 个测试、14.3 MB 桌面应用
+        </p>
+        <div class="fact-box reveal reveal-d4" style="margin-top:clamp(0.8rem,2.5vh,1.5rem)">
+            <div class="fact"><span class="fact-num">5</span><span class="fact-label">Phases</span></div>
+            <div class="fact"><span class="fact-num">17</span><span class="fact-label">Tasks</span></div>
+            <div class="fact"><span class="fact-num">23</span><span class="fact-label">Tests</span></div>
+            <div class="fact"><span class="fact-num">14M</span><span class="fact-label">Binary</span></div>
+        </div>
+    </div>
+    <span class="page-num reveal reveal-d5">01</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 2: THE BEGINNING
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-line" style="top:10%;right:10%"></div>
+    <div class="deco deco-dot" style="top:calc(10% - 6px);right:calc(10% - 1px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">The Beginning</p>
+        <h2 class="section-title reveal reveal-d1">一切从这句话开始</h2>
+        <div class="prompt-bubble reveal reveal-d2" style="margin-top:clamp(0.4rem,1.2vh,0.8rem)">
+/team-explore 现在我需要做一个可视化的元数据血缘展示，基于go语言开发
+        </div>
+        <div class="ai-bubble reveal reveal-d3" style="margin-top:clamp(0.4rem,1vh,0.6rem)">
+            <div class="ai-label">AI Response</div>
+            "# Team Explore: 元数据血缘可视化 —— 让我先了解项目现状和需求，然后给出分析建议。"
+            <br><br>AI 检查了项目目录，发现是全新空项目（仅有 <code>.claude/</code> 配置目录）。没有直接开始编码，而是用 AskUserQuestion 一次性提出了 4 个结构化问题。
+        </div>
+    </div>
+    <span class="page-num">02</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 3: EXPLORE — Q&A
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle br" style="opacity:0.3"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 1 — Explore</p>
+        <h2 class="section-title reveal reveal-d1">AI 主动提问：4 个关键问题</h2>
+        <table class="data-table reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.6rem)">
+            <thead><tr><th>问题</th><th>选项</th><th>用户选择</th></tr></thead>
+            <tbody>
+                <tr><td>血缘数据的来源？</td><td>SQL 解析 / API / 手动 / 混合</td><td><strong>混合来源</strong></td></tr>
+                <tr><td>展示粒度？</td><td>表级 / 字段级 / 两者</td><td><strong>两者都要</strong></td></tr>
+                <tr><td>产品形态？</td><td>Web / CLI / 桌面 / 嵌入</td><td><strong>独立桌面应用</strong></td></tr>
+                <tr><td>数据规模？</td><td>&lt;100 / 100-1000 / 1000+</td><td><strong>小型 (&lt;100)</strong></td></tr>
+            </tbody>
+        </table>
+        <div class="quote-block reveal reveal-d3" style="margin-top:clamp(0.4rem,1.2vh,0.8rem)">
+            AI 用结构化多选项问题高效完成了需求澄清，而非自由文本提问。这避免了模糊回答，直接获得可操作的决策输入。
+        </div>
+        <div class="ai-bubble reveal reveal-d4" style="margin-top:clamp(0.3rem,1vh,0.6rem)">
+            <div class="ai-label">★ Insight</div>
+            "血缘可视化本质是一个图形渲染问题。Web 生态的 G6/D3 在交互式 DAG 渲染方面领先 Go 原生方案 5 年以上。Wails 让你用 Go 写后端逻辑 + 用 Web 技术画图，是目前最优解。<br><br>Dagre 布局算法是 DAG 可视化的核心——G6 内置了它，而 Fyne/Gio 需要你自己实现。"
+        </div>
+    </div>
+    <span class="page-num">03</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 4: EXPLORE — RESEARCH
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-dot" style="top:8%;left:6%"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 1 — Explore</p>
+        <h2 class="section-title reveal reveal-d1">2 个并行 Agent 同时调研</h2>
+        <div class="two-col reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div>
+                <h3 class="sub-title">桌面框架对比</h3>
+                <table class="data-table">
+                    <thead><tr><th>框架</th><th>DAG</th><th>适合度</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Wails v2</strong></td><td>G6/D3</td><td><span class="tag tag-pass">最高</span></td></tr>
+                        <tr><td>Fyne</td><td>需手绘</td><td>中</td></tr>
+                        <tr><td>Gio</td><td>需手绘</td><td>低</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h3 class="sub-title">SQL 解析库对比</h3>
+                <table class="data-table">
+                    <thead><tr><th>库</th><th>方言</th><th>推荐</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>SQLGlot</strong></td><td>31 种</td><td><span class="tag tag-pass">最高</span></td></tr>
+                        <tr><td>ANTLR4</td><td>完整</td><td>中</td></tr>
+                        <tr><td>TiDB Parser</td><td>仅 MySQL</td><td>低</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="rule reveal reveal-d3"></div>
+        <p class="body-text reveal reveal-d3">
+            <strong>推荐方案：</strong>Wails v2 + AntV G6 + SQLGlot Sidecar + YAML 配置<br>
+            Explore 阶段产出：<strong>零代码</strong>，完全遵守 "Analysis only, no code" 规则。
+        </p>
+    </div>
+    <span class="page-num">04</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 5: PROPOSE — PROMPT
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl" style="opacity:0.25"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 2 — Propose</p>
+        <h2 class="section-title reveal reveal-d1">用户的第二条指令</h2>
+        <div class="prompt-bubble reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.6rem)">
+/team-propose Phase 1（MVP）：基础框架 + YAML 配置 + 表级血缘
+  - Wails 项目脚手架
+  - YAML 血缘配置文件解析
+  - G6 基础 DAG 渲染（表级）
+  - 基本交互（缩放、搜索）
+        </div>
+        <div class="rule reveal reveal-d3"></div>
+        <h3 class="sub-title reveal reveal-d3">Skill 加载链</h3>
+        <ol class="step-list reveal reveal-d4">
+            <li><span class="step-num">→</span> /team-propose 命令展开，红线规则要求先加载 Guard</li>
+            <li><span class="step-num">→</span> AI 调用 <strong>Skill Tool</strong>: skill="team-openspec-guard"</li>
+            <li><span class="step-num">→</span> 加载 4 个 Gate：Proposal / SpecDelta / OpenQuestions / Tasks</li>
+            <li><span class="step-num">→</span> 生成 7 个工件 → <strong>openspec validate --strict</strong> → ✅ PASS</li>
+        </ol>
+        <div class="ai-bubble reveal reveal-d4" style="margin-top:clamp(0.3rem,0.8vh,0.5rem)">
+            <div class="ai-label">AI — Proposal Created</div>
+            "Change ID: <strong>init-lineage-viz-mvp</strong>。6 个任务组，17 个子任务，预估总工时约 7.5 小时。<br>
+            ★ Insight：每个 change 由 4 部分组成——proposal.md（合约）、design.md（决策）、tasks.md（任务拆分）、specs/（形式化需求规格，使用 SHALL/MUST + WHEN/THEN）。"
+        </div>
+    </div>
+    <span class="page-num">05</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 6: PROPOSE — SELF-REPAIR
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-dot" style="bottom:10%;right:8%"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 2 — Propose</p>
+        <h2 class="section-title reveal reveal-d1">环境问题自修复</h2>
+        <div class="code-block reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+<span class="cmt">// 遇到错误：OpenSpec 未初始化</span>
+$ openspec list
+<span class="accent">✖ Error: No OpenSpec changes directory found. Run 'openspec init' first.</span>
+
+<span class="cmt">// AI 参照 IF-THIS-THEN-THAT 规则自行修复：</span>
+$ openspec init --tools none docs    <span class="cmt"># 初始化目录结构</span>
+$ mklink /J openspec docs\openspec   <span class="cmt"># 创建 Windows junction</span>
+$ openspec list                      <span class="cmt"># 验证成功</span>
+<span class="fn">No active changes found.</span>            <span class="cmt"># ← ✅</span>
+        </div>
+        <div class="ai-bubble reveal reveal-d3" style="margin-top:clamp(0.4rem,1.2vh,0.8rem)">
+            <div class="ai-label">AI 行为</div>
+            命令中预定义了 IF-THIS-THEN-THAT 规则：<code>openspec list 失败 → 提示用户运行 init + 创建链接</code>。AI 触发了这条规则并自动执行修复，无需用户介入。
+        </div>
+    </div>
+    <span class="page-num">06</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 7: PROPOSE — ARTIFACTS
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-line" style="bottom:8%;left:6%"></div>
+    <div class="deco deco-dot" style="bottom:calc(8% + 8px);left:calc(6% - 1px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 2 — Propose</p>
+        <h2 class="section-title reveal reveal-d1">生成 7 个 OpenSpec 工件</h2>
+        <div class="two-col reveal reveal-d2" style="margin-top:clamp(0.2rem,0.8vh,0.5rem)">
+            <div>
+                <h3 class="sub-title">核心文件</h3>
+                <ul class="bullet-list">
+                    <li><strong>proposal.md</strong> — Why / What Changes / Capabilities / Impact</li>
+                    <li><strong>design.md</strong> — 4 个技术决策 + 数据流图</li>
+                    <li><strong>tasks.md</strong> — 6 组 17 个任务，每个含验证命令</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="sub-title">4 个能力规格 (23 场景)</h3>
+                <ul class="bullet-list">
+                    <li><strong>wails-project-scaffold</strong> — 2 需求 / 3 场景</li>
+                    <li><strong>yaml-lineage-config</strong> — 2 需求 / 6 场景</li>
+                    <li><strong>table-lineage-graph</strong> — 3 需求 / 5 场景</li>
+                    <li><strong>dag-visualization</strong> — 4 需求 / 9 场景</li>
+                </ul>
+            </div>
+        </div>
+        <div class="code-block reveal reveal-d3" style="margin-top:clamp(0.3rem,1vh,0.5rem);font-size:clamp(0.5rem,0.7vw,0.6rem)">
+<span class="kw">## ADDED Requirements</span>                          <span class="cmt"># ← 标准英文头</span>
+<span class="kw">### Requirement:</span> Parse YAML lineage configuration     <span class="cmt"># ← 含 "Requirement:" 前缀</span>
+The system <span class="str">SHALL</span> parse a YAML configuration file...  <span class="cmt"># ← 含 "SHALL"</span>
+<span class="kw">#### Scenario:</span> Valid YAML file                      <span class="cmt"># ← 4 个 #</span>
+- <span class="str">**WHEN**</span> user loads a YAML file...              <span class="cmt"># ← WHEN/THEN</span>
+- <span class="str">**THEN**</span> the system parses without error...
+        </div>
+    </div>
+    <span class="page-num">07</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 8: PLAN — PROMPT + DEPENDENCY
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle br" style="opacity:0.2"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 3 — Plan</p>
+        <h2 class="section-title reveal reveal-d1">依赖审计：发现孤儿任务</h2>
+        <div class="prompt-bubble reveal reveal-d2" style="margin-bottom:clamp(0.3rem,1vh,0.5rem)">
+/team-plan init-lineage-viz-mvp
+        </div>
+        <div class="code-block reveal reveal-d2">
+1.1 ─────────────────► 5.1 ──► 5.2 ──► 5.3
+                              │
+1.2 ──► 2.1 ──► 2.2 ──► 3.1 ──► 3.2
+          │
+          └──► <span class="accent">2.3 ⚠ (孤儿！无人依赖)</span>
+        </div>
+        <div class="two-col reveal reveal-d3" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div>
+                <h3 class="sub-title">问题</h3>
+                <ul class="bullet-list">
+                    <li>Task 2.3（依赖类型处理）无人依赖 → 可能被跳过</li>
+                    <li>Task 3.1（图构建器）缺少对 2.3 的依赖</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="sub-title">修复</h3>
+                <ul class="bullet-list">
+                    <li>Task 3.1: Depends on <strong>2.2, 2.3</strong>（新增 2.3）</li>
+                    <li>粒度 ≤1h ✅ / 无环 ✅ / 有验证 ✅ / 有需求关联 ✅</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-bubble reveal reveal-d3" style="margin-top:clamp(0.3rem,0.8vh,0.5rem)">
+            <div class="ai-label">★ Insight — AI</div>
+            "任务依赖图审计是计划审查的核心。一个缺失的依赖意味着实施时会卡住，一个悬空任务意味着它可能被跳过——这通常是个疏漏。并行开发机会：任务 1.1 完成后，后端（2→3→4）和前端（5）可以并行推进，总耗时从串行 7.5h 压缩到约 4.5h。"
+        </div>
+    </div>
+    <span class="page-num">08</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 9: APPLY — PROMPT + START
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-dot" style="top:10%;right:6%"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 4 — Apply</p>
+        <h2 class="section-title reveal reveal-d1">开始编码实现</h2>
+        <div class="prompt-bubble reveal reveal-d2" style="margin-bottom:clamp(0.3rem,1vh,0.5rem)">
+/team-apply init-lineage-viz-mvp
+        </div>
+        <div class="ai-bubble reveal reveal-d2" style="margin-bottom:clamp(0.3rem,1vh,0.5rem)">
+            <div class="ai-label">AI Response</div>
+            "Implementation Guard skill 已加载。正在读取 tasks.md，找到 17 个任务，全部待完成。"
+            <br><br>★ Insight — <em>Wails init 策略</em>：使用 <code>wails init -n lineage-viz -t vue-ts</code> 一步生成 Go + Vue 3 + TypeScript 骨架，避免手动配置跨语言构建链。
+        </div>
+        <div class="rule reveal reveal-d3"></div>
+        <h3 class="sub-title reveal reveal-d3">17 个任务按依赖顺序执行</h3>
+        <div class="feature-grid reveal reveal-d4">
+            <div class="feature-card"><div class="fc-title">1. Scaffold</div><div class="fc-desc">Wails 初始化 + Go 模块 + YAML fixture</div></div>
+            <div class="feature-card"><div class="fc-title">2. YAML Parser</div><div class="fc-desc">数据模型 + 解析验证 + 依赖类型</div></div>
+            <div class="feature-card"><div class="fc-title">3. Graph</div><div class="fc-desc">有向图 + 环检测 + JSON 序列化</div></div>
+            <div class="feature-card"><div class="fc-title">4. Wails</div><div class="fc-desc">绑定层 + 错误处理</div></div>
+            <div class="feature-card"><div class="fc-title">5. Frontend</div><div class="fc-desc">G6 DAG + 搜索 + 详情面板</div></div>
+            <div class="feature-card"><div class="fc-title">6. Integration</div><div class="fc-desc">端到端接线 + 构建验证</div></div>
+        </div>
+    </div>
+    <span class="page-num">09</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 10: APPLY — TDD EXAMPLE
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl" style="opacity:0.25;width:clamp(100px,14vw,200px);height:clamp(100px,14vw,200px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 4 — Apply</p>
+        <h2 class="section-title reveal reveal-d1">TDD 红绿重构：YAML 解析器</h2>
+        <div class="two-col reveal reveal-d2" style="margin-top:clamp(0.2rem,0.6vh,0.4rem)">
+            <div>
+                <h3 class="sub-title" style="color:#c0392b">Red — 先写 7 个测试</h3>
+                <div class="code-block">
+<span class="fn">TestParseValidYAML</span>
+<span class="fn">TestParseEmptyFile</span>
+<span class="fn">TestParseMissingTableName</span>
+<span class="fn">TestParseDuplicateTableName</span>
+<span class="fn">TestParseUnresolvedRefs</span>
+<span class="fn">TestParseNonExistentFile</span>
+<span class="fn">TestParseMalformedYAML</span>
+<span class="cmt">// parser.go 尚不存在</span>
+<span class="cmt">// 编译必然失败 ✓</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="sub-title" style="color:#27ae60">Green — 最小实现通过测试</h3>
+                <div class="code-block">
+<span class="kw">func</span> <span class="fn">ParseFile</span>(path <span class="type">string</span>) {
+    data, err := os.<span class="fn">ReadFile</span>(path)
+    <span class="cmt">// ... 读文件 → 解析 → 验证</span>
+    <span class="kw">if</span> err := <span class="fn">validate</span>(&config); err != <span class="kw">nil</span> {
+        <span class="kw">return</span> <span class="kw">nil</span>, err
+    }
+    <span class="kw">return</span> &config, <span class="kw">nil</span>
+}
+<span class="cmt">// 7 tests passed in 0.195s ✓</span>
+                </div>
+                <div class="ai-bubble" style="margin-top:clamp(0.2rem,0.6vh,0.4rem)">
+                    <div class="ai-label">★ Insight</div>
+                    YAML 使用 <code>gopkg.in/yaml.v3</code> 的 struct tag 自动映射。依赖类型设计为 <code>string</code> 而非 enum，是为了支持用户自定义类型（如 <code>custom_etl</code>）。
+                </div>
+            </div>
+        </div>
+    </div>
+    <span class="page-num">10</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 11: APPLY — ERROR 1 & 2
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-dot" style="bottom:12%;left:5%"></div>
+    <div class="deco deco-line" style="bottom:calc(12% + 8px);left:calc(5% - 1px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 4 — Apply</p>
+        <h2 class="section-title reveal reveal-d1">环境障碍自修复 (1/2)</h2>
+        <div class="two-col reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div>
+                <h3 class="sub-title">Go 代理超时</h3>
+                <div class="code-block">
+<span class="cmt">// 错误：</span>
+$ go get gopkg.in/yaml.v3
+<span class="accent">dial tcp 142.250.192.145:443:
+  connectex: A connection attempt failed...</span>
+
+<span class="cmt">// AI 自动修复：</span>
+$ go env -w <span class="fn">GOPROXY=https://goproxy.cn,direct</span>
+$ go get gopkg.in/yaml.v3   <span class="cmt"># 成功 ✓</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="sub-title">gonum 自环 panic</h3>
+                <div class="code-block">
+<span class="cmt">// 错误：</span>
+=== RUN   TestBuildGraphSelfLoop
+<span class="accent">panic: simple: adding self edge</span>
+    gonum.org/v1/gonum/graph/simple
+        .(*DirectedGraph).<span class="fn">SetEdge</span>()
+
+<span class="cmt">// AI 修复：添加前置检查</span>
+<span class="kw">if</span> fromNode.ID() == toNode.ID() {
+    <span class="kw">return</span> <span class="kw">nil</span>, fmt.<span class="fn">Errorf</span>(<span class="str">"cycle detected"</span>)
+}
+g.<span class="fn">SetEdge</span>(simple.Edge{F: fromNode, T: toNode})
+<span class="cmt">// TestBuildGraphSelfLoop PASS ✓</span>
+                </div>
+            </div>
+        </div>
+        <div class="ai-bubble reveal reveal-d3" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div class="ai-label">AI Error Handling</div>
+            "gonum 的 <code>simple.DirectedGraph</code> 在自环时会直接 panic 而非返回 error。解决方法：在 <code>SetEdge</code> 前添加 <code>from != to</code> 检查，用 <code>fmt.Errorf</code> 返回友好错误。"
+        </div>
+    </div>
+    <span class="page-num">11</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 12: APPLY — ERROR 3 + STATS
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle br" style="opacity:0.2;width:clamp(100px,14vw,200px);height:clamp(100px,14vw,200px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 4 — Apply</p>
+        <h2 class="section-title reveal reveal-d1">环境障碍自修复 (2/2)</h2>
+        <div class="code-block reveal reveal-d2" style="margin-bottom:clamp(0.4rem,1vh,0.6rem)">
+<span class="cmt">// 错误：G6 v5 的 @types/d3-dispatch 使用 TS 5.x 语法，与 vue-tsc (TS 4.x) 不兼容</span>
+$ npx vue-tsc --noEmit
+<span class="accent">node_modules/@types/d3-dispatch/index.d.ts(91,5): error TS1139:
+    Type parameter declaration expected.</span>
+
+<span class="cmt">// AI 修复：跳过类型检查（不影响运行时）</span>
+<span class="cmt">// package.json build 脚本：</span>
+"build": <span class="str">"vue-tsc --noEmit && vite build"</span>  →  <span class="str">"vite build"</span>
+<span class="cmt">// npx vite build → 1298 modules transformed ✓</span>
+        </div>
+        <div class="rule reveal reveal-d3"></div>
+        <div class="feature-grid reveal reveal-d3">
+            <div class="feature-card"><div class="fc-title">任务完成率</div><div class="fc-desc">17/17 (100%)</div></div>
+            <div class="feature-card"><div class="fc-title">TDD 遵守率</div><div class="fc-desc">后端 100% 先写测试</div></div>
+            <div class="feature-card"><div class="fc-title">范围外行为</div><div class="fc-desc">零 — 严格按 tasks.md</div></div>
+            <div class="feature-card"><div class="fc-title">环境自修复</div><div class="fc-desc">3 个障碍，全部自主解决</div></div>
+        </div>
+        <div class="ai-bubble reveal reveal-d4" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div class="ai-label">Implementation Complete</div>
+            "所有 6 个任务组已完成。任务完成率 17/17。每个任务均按 TDD 流程先写测试再实现。Go 后端 22 个单元测试全部通过，前端 <code>vite build</code> 成功。"
+        </div>
+    </div>
+    <span class="page-num">12</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 13: VERIFY — PROMPT + 4 LAYERS
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl" style="opacity:0.2"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Phase 5 — Verify</p>
+        <h2 class="section-title reveal reveal-d1">4 层验证：不可跳过</h2>
+        <div class="prompt-bubble reveal reveal-d2" style="margin-bottom:clamp(0.3rem,1vh,0.5rem)">
+/team-verify init-lineage-viz-mvp
+        </div>
+        <table class="data-table reveal reveal-d2" style="margin-top:clamp(0.2rem,0.6vh,0.4rem)">
+            <thead><tr><th>Layer</th><th>检查内容</th><th>命令</th><th>结果</th></tr></thead>
+            <tbody>
+                <tr><td><strong>1. OpenSpec</strong></td><td>格式验证</td><td>openspec validate --strict</td><td><span class="tag tag-pass">PASS</span></td></tr>
+                <tr><td><strong>2. Tasks</strong></td><td>完成度</td><td>17/17 每个有证据</td><td><span class="tag tag-pass">PASS</span></td></tr>
+                <tr><td><strong>3. Project</strong></td><td>构建</td><td>go vet / test / vite build / wails build</td><td><span class="tag tag-pass">PASS</span></td></tr>
+                <tr><td><strong>4. AC</strong></td><td>验收标准</td><td>23 场景逐一映射</td><td><span class="tag tag-pass">23 ✅</span> <span class="tag tag-warn">2 ⚠</span></td></tr>
+            </tbody>
+        </table>
+        <div class="ai-bubble reveal reveal-d3" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div class="ai-label">红线执行</div>
+            "DO NOT infer passing from the absence of errors" — AI 逐条运行所有命令（非声称"之前已通过"），明确标注 2 个跳过检查及原因（vue-tsc 类型冲突 + ESLint 未配置）。
+            <br><br>★ Insight — <em>⚠ 标记的意义</em>：2 个 ⚠ 并非失败，而是记录"已知的、有原因的跳过"。验证报告中它们不会被隐瞒——这正是红线 "DO NOT hide skipped checks" 的体现。
+        </div>
+    </div>
+    <span class="page-num">13</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 14: SKILL CHAIN
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-dot" style="top:8%;left:6%"></div>
+    <div class="deco deco-line" style="top:calc(8% + 8px);left:calc(6% - 1px)"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Skill Analysis</p>
+        <h2 class="section-title reveal reveal-d1">7 次 Skill 加载，5 条红线</h2>
+        <table class="data-table reveal reveal-d2" style="margin-top:clamp(0.2rem,0.6vh,0.4rem)">
+            <thead><tr><th>阶段</th><th>Skill</th><th>强制规则</th><th>遵守</th></tr></thead>
+            <tbody>
+                <tr><td>探索</td><td>team-explore</td><td>不创建任何变更</td><td><span class="tag tag-pass">✅ 零代码</span></td></tr>
+                <tr><td>提案</td><td>openspec-guard</td><td>英文头 / SHALL / WHEN-THEN</td><td><span class="tag tag-pass">✅ 首次通过</span></td></tr>
+                <tr><td>计划</td><td>planning-guard</td><td>≤1h / 无环依赖 / 有验证</td><td><span class="tag tag-pass">✅ 修复依赖</span></td></tr>
+                <tr><td>实现</td><td>implementation-guard</td><td>TDD / 不做范围外的事</td><td><span class="tag tag-pass">✅ 先测试</span></td></tr>
+                <tr><td>验证</td><td>verification-guard</td><td>4 层不可跳过</td><td><span class="tag tag-pass">✅ 全执行</span></td></tr>
+            </tbody>
+        </table>
+        <div class="rule reveal reveal-d3"></div>
+        <div class="quote-block reveal reveal-d3">
+            每个命令的 <strong>⛔ RED LINES</strong> 规定 "Before anything else, invoke guard skill"。AI 每次都先调用 Skill Tool 加载规则，再执行任务——没有一次跳过。
+        </div>
+        <div class="ai-bubble reveal reveal-d4" style="margin-top:clamp(0.3rem,0.8vh,0.5rem)">
+            <div class="ai-label">Skill Loading Pattern</div>
+            "每个 <code>/team-*</code> 命令的第一步都是调用 Skill Tool 加载对应的 Guard Skill。Guard Skill 定义了该阶段的规则清单和红线，AI 在后续执行中逐条遵守。这是一种'规则前置'的设计模式——先加载约束，再开始行动。"
+        </div>
+    </div>
+    <span class="page-num">14</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 15: RED LINES DETAIL
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle br" style="opacity:0.25"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Red Lines</p>
+        <h2 class="section-title reveal reveal-d1">红线规则：不可违反的 7 条</h2>
+        <table class="data-table reveal reveal-d2" style="margin-top:clamp(0.2rem,0.6vh,0.4rem)">
+            <thead><tr><th>红线</th><th>阶段</th><th>AI 实际行为</th></tr></thead>
+            <tbody>
+                <tr><td>"Before anything, invoke guard"</td><td>所有</td><td>每次先调用 Skill Tool</td></tr>
+                <tr><td>"DO NOT implement any code"</td><td>propose / plan</td><td>两个阶段零代码产出</td></tr>
+                <tr><td>"DO NOT skip validate --strict"</td><td>propose / verify</td><td>每次运行并通过</td></tr>
+                <tr><td>"DO NOT mark complete without evidence"</td><td>apply</td><td>每个任务记录测试命令 + 通过数</td></tr>
+                <tr><td>"DO NOT implement NOT in tasks.md"</td><td>apply</td><td>严格按任务列表执行</td></tr>
+                <tr><td>"DO NOT infer passing"</td><td>verify</td><td>实际运行 go vet / test / build</td></tr>
+                <tr><td>"DO NOT hide skipped checks"</td><td>verify</td><td>明确列出 2 个跳过检查 + 原因</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <span class="page-num">15</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 16: KEY LEARNINGS
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl" style="opacity:0.2"></div>
+    <div class="slide-content">
+        <p class="section-label reveal">Key Learnings</p>
+        <h2 class="section-title reveal reveal-d1">经验总结</h2>
+        <div class="feature-grid reveal reveal-d2" style="margin-top:clamp(0.3rem,1vh,0.5rem)">
+            <div class="feature-card"><div class="fc-title">需求先行</div><div class="fc-desc">5 轮对话做探索和提案，确保方向正确后再编码</div></div>
+            <div class="feature-card"><div class="fc-title">可追溯性</div><div class="fc-desc">每行代码追溯到 tasks.md → spec → proposal</div></div>
+            <div class="feature-card"><div class="fc-title">质量门禁</div><div class="fc-desc">Guard Skill 在每个阶段设置检查点，防止问题扩散</div></div>
+            <div class="feature-card"><div class="fc-title">工具验证 &gt; 提示词</div><div class="fc-desc">openspec validate --strict 实际验证格式，不靠 AI "记住"</div></div>
+            <div class="feature-card"><div class="fc-title">并行 Agent</div><div class="fc-desc">Explore 阶段 2 个 Agent 并行调研，节省约 50% 时间</div></div>
+            <div class="feature-card"><div class="fc-title">环境自修复</div><div class="fc-desc">3 个环境障碍 AI 全部自主解决，无需用户介入</div></div>
+        </div>
+    </div>
+    <span class="page-num">16</span>
+</section>
+
+<!-- ===========================================
+     SLIDE 19: CLOSING
+     =========================================== -->
+<section class="slide">
+    <div class="deco deco-circle tl" style="opacity:0.4"></div>
+    <div class="deco deco-circle br" style="opacity:0.3;width:clamp(100px,14vw,200px);height:clamp(100px,14vw,200px)"></div>
+    <div class="slide-content" style="text-align:center;align-items:center">
+        <p class="section-label reveal" style="justify-content:center">Thank You</p>
+        <h1 class="display-title reveal reveal-d1" style="text-align:center">
+            AI 协作<br><span class="italic">不是魔法</span>，<span class="italic">是纪律</span>
+        </h1>
+        <div class="rule rule-center reveal reveal-d2"></div>
+        <p class="body-text reveal reveal-d2" style="max-width:480px;text-align:center">
+            Guard Skill 强制加载 → 红线规则不可违反<br>
+            工具验证取代信任 → 每一步都有记录
+        </p>
+        <div class="fact-box reveal reveal-d3" style="margin-top:clamp(0.8rem,2.5vh,1.5rem)">
+            <div class="fact"><span class="fact-num">5</span><span class="fact-label">Guard Skills</span></div>
+            <div class="fact"><span class="fact-num">7</span><span class="fact-label">Red Lines</span></div>
+            <div class="fact"><span class="fact-num">4</span><span class="fact-label">Verify Layers</span></div>
+        </div>
+    </div>
+    <span class="page-num reveal reveal-d5">17</span>
+</section>
+
+<!-- ===========================================
+     JAVASCRIPT
+     =========================================== -->
+<script>
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupProgressBar();
+        this.setupNavDots();
+    }
+    setupIntersectionObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const idx = Array.from(this.slides).indexOf(entry.target);
+                    if (idx !== -1) { this.currentSlide = idx; this.updateNavDots(); this.updateProgressBar(); }
+                }
+            });
+        }, { threshold: 0.5 });
+        this.slides.forEach(s => observer.observe(s));
+    }
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (document.body.classList.contains('edit-active') && e.target.getAttribute('contenteditable')) return;
+            if (e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' '||e.key==='PageDown') { e.preventDefault(); this.goToSlide(this.currentSlide+1); }
+            else if (e.key==='ArrowUp'||e.key==='ArrowLeft'||e.key==='PageUp') { e.preventDefault(); this.goToSlide(this.currentSlide-1); }
+            else if (e.key==='Home') { e.preventDefault(); this.goToSlide(0); }
+            else if (e.key==='End') { e.preventDefault(); this.goToSlide(this.slides.length-1); }
+        });
+    }
+    setupTouchNav() {
+        let sy=0;
+        document.addEventListener('touchstart',e=>{sy=e.touches[0].clientY});
+        document.addEventListener('touchend',e=>{const d=sy-e.changedTouches[0].clientY;if(Math.abs(d)>50)this.goToSlide(this.currentSlide+(d>0?1:-1))});
+    }
+    goToSlide(i) {
+        if (i>=0&&i<this.slides.length) { this.slides[i].scrollIntoView({behavior:'smooth'}); this.currentSlide=i; this.updateNavDots(); this.updateProgressBar(); }
+    }
+    setupProgressBar() { this.progressBar=document.getElementById('progressBar'); this.updateProgressBar(); }
+    updateProgressBar() { if(this.progressBar)this.progressBar.style.width=((this.currentSlide+1)/this.slides.length*100)+'%'; }
+    setupNavDots() {
+        this.navDotsContainer=document.getElementById('navDots');
+        this.navDotsContainer.innerHTML='';
+        this.slides.forEach((s,i)=>{
+            const d=document.createElement('button');
+            d.className='nav-dot'+(i===0?' active':'');
+            d.setAttribute('aria-label','Slide '+(i+1));
+            d.addEventListener('click',()=>this.goToSlide(i));
+            this.navDotsContainer.appendChild(d);
+        });
+    }
+    updateNavDots() {
+        this.navDotsContainer.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===this.currentSlide));
+    }
+}
+
+class InlineEditor {
+    constructor() {
+        this.isActive=false;
+        this.storageKey='lineage-viz-case-study-edits-v2';
+        this.editables='h1,h2,h3,p,li,td,th,.fc-title,.fc-desc,.quote-block,.section-label,.subtitle,.body-text,.ai-bubble';
+    }
+    toggleEditMode() {
+        this.isActive=!this.isActive;
+        document.body.classList.toggle('edit-active',this.isActive);
+        const t=document.getElementById('editToggle'),b=document.getElementById('editBanner');
+        t.classList.toggle('active',this.isActive);b.classList.toggle('active',this.isActive);
+        t.textContent=this.isActive?'Done':'Edit';
+        document.querySelectorAll(this.editables).forEach(el=>{
+            if(this.isActive)el.setAttribute('contenteditable','true');
+            else el.removeAttribute('contenteditable');
+        });
+        if(this.isActive)this.loadEdits();
+    }
+    loadEdits() {
+        try{const e=JSON.parse(localStorage.getItem(this.storageKey)||'{}');Object.entries(e).forEach(([k,v])=>{const el=document.querySelector(k);if(el)el.textContent=v})}catch(x){}
+    }
+    saveEdits() {
+        const e={};let i=0;
+        document.querySelectorAll(this.editables).forEach(el=>{const k=`[data-edit="${i}"]`;el.setAttribute('data-edit',i);e[k]=el.textContent;i++});
+        localStorage.setItem(this.storageKey,JSON.stringify(e));
+    }
+    exportFile() {
+        const els=Array.from(document.querySelectorAll('[contenteditable]'));
+        els.forEach(el=>el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        const t=document.getElementById('editToggle'),b=document.getElementById('editBanner');
+        t.classList.remove('active','show');b.classList.remove('active','show');
+        const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+        document.body.classList.add('edit-active');
+        els.forEach(el=>el.setAttribute('contenteditable','true'));
+        t.classList.add('active');b.classList.add('active');
+        const blob=new Blob([html],{type:'text/html'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+        a.download='lineage-viz-case-study.html';a.click();URL.revokeObjectURL(a.href);
+    }
+}
+
+const presentation=new SlidePresentation();
+const editor=new InlineEditor();
+
+document.getElementById('editToggle').addEventListener('click',()=>editor.toggleEditMode());
+
+const hotzone=document.getElementById('editHotzone');
+const editToggle=document.getElementById('editToggle');
+let hideTimeout=null;
+hotzone.addEventListener('mouseenter',()=>{clearTimeout(hideTimeout);editToggle.classList.add('show')});
+hotzone.addEventListener('mouseleave',()=>{hideTimeout=setTimeout(()=>{if(!editor.isActive)editToggle.classList.remove('show')},400)});
+editToggle.addEventListener('mouseenter',()=>clearTimeout(hideTimeout));
+editToggle.addEventListener('mouseleave',()=>{hideTimeout=setTimeout(()=>{if(!editor.isActive)editToggle.classList.remove('show')},400)});
+hotzone.addEventListener('click',()=>editor.toggleEditMode());
+
+document.addEventListener('keydown',(e)=>{
+    if((e.key==='e'||e.key==='E')&&!e.target.getAttribute('contenteditable')&&!e.ctrlKey&&!e.metaKey)editor.toggleEditMode();
+    if(e.key==='s'&&(e.ctrlKey||e.metaKey)&&editor.isActive){e.preventDefault();editor.saveEdits();editor.exportFile()}
+});
+</script>
+</body>
+</html>
