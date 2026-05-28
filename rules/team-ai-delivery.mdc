@@ -8,7 +8,7 @@ description: Team AI delivery rules for OpenSpec, Superpowers, custom commands a
 
 For non-trivial feature work, behavior changes, API changes, data model changes, security-sensitive changes, or cross-module refactoring:
 
-1. **Start with OpenSpec** — never skip to implementation
+1. **Start with exploration** — for complex requirements, use `/team-explore` first
 2. **Create or update changes** under `openspec/changes/<id>/`
 3. **Do NOT implement** before proposal, tasks, and spec deltas are reviewed
 4. **Use team commands** (in order):
@@ -42,7 +42,7 @@ See `team-openspec-guard` skill for full format specifications.
 
 | Step | Can Skip? | Condition |
 |------|-----------|-----------|
-| `/team-explore` | Yes | Problem is already clear, change-id is decided |
+| `/team-explore` | Yes | Problem is already clear, change-id is decided. If used, produces brainstorm.md |
 | `/team-plan` | Yes | Simple change, single file, no dependency concerns |
 | `/team-review` | Yes | Solo project, small change |
 | `/team-retro` | Yes | Optional but recommended — prevents repeat mistakes |
