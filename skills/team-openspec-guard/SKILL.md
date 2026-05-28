@@ -23,6 +23,26 @@ Do NOT use this skill when:
 - Implementing code (use `team-implementation-guard`)
 - Verifying results (use `team-verification-guard`)
 
+## Gate 0: OpenSpec CLI Availability (Mandatory — Check First)
+
+Before any OpenSpec operation, verify the CLI is installed and accessible:
+
+```bash
+openspec --version
+```
+
+If the command fails (not found / not recognized):
+
+1. **STOP** — do not proceed with any OpenSpec operations
+2. **Tell the user:**
+   > OpenSpec CLI is not installed or not in PATH. Install it first:
+   > ```bash
+   > npm install -g @fission-ai/openspec
+   > ```
+   > Then verify with `openspec --version`.
+
+If the command succeeds, proceed to Gate 1.
+
 ## Gate 1: Proposal Format (Mandatory — English headers)
 
 proposal.md **MUST** use these sections (OpenSpec CLI hard-codes English header matching):

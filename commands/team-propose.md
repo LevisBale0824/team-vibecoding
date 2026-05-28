@@ -18,8 +18,9 @@ These are non-negotiable. You MUST comply.
 
 ## 📋 EXECUTION CHECKLIST
 
-- [ ] 1. If `$ARGUMENTS` is empty → ASK "What change do you want to propose?"
-- [ ] 2. Run `openspec list` — if it fails → STOP (see RED LINE #6). This validates the junction/symlink and init were done.
+- [ ] 1. Run `openspec --version` — if command not found → STOP. Tell user: "OpenSpec CLI is not installed. Run `npm install -g @fission-ai/openspec` first, then verify with `openspec --version`."
+- [ ] 2. If `$ARGUMENTS` is empty → ASK "What change do you want to propose?"
+- [ ] 3. Run `openspec list` — if it fails → STOP (see RED LINE #6). This validates the junction/symlink and init were done.
 - [ ] 3. Read context: `openspec/project.md`, `openspec/AGENTS.md` (if exists)
 - [ ] 4. Run `openspec list --specs`
 - [ ] 5. Determine change-id in kebab-case (verb-noun, e.g., `add-user-auth`)
