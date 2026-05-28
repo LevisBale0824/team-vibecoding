@@ -22,6 +22,9 @@ These are non-negotiable. You MUST comply.
 - [ ] 2. If `$ARGUMENTS` is empty → ASK "What change do you want to propose?"
 - [ ] 3. Run `openspec list` — if it fails → STOP (see RED LINE #6). This validates the junction/symlink and init were done.
 - [ ] 3. Read context: `openspec/project.md`, `openspec/AGENTS.md` (if exists)
+- [ ] 3.1. Check for existing brainstorm.md: `openspec/changes/<change-id>/brainstorm.md`
+  - If exists → Read brainstorm.md as context for proposal generation
+  - If not exists → Continue without it (user may have skipped /team-explore)
 - [ ] 4. Run `openspec list --specs`
 - [ ] 5. Determine change-id in kebab-case (verb-noun, e.g., `add-user-auth`)
 - [ ] 6. Create directory: `openspec/changes/<change-id>/`
