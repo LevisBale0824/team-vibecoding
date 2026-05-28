@@ -118,6 +118,54 @@ Parse `tasks.md` to build dependency graph:
 - Scope changes
 - Architecture decisions
 
+## Worktree Management
+
+When executing tasks, consider using Git worktrees for isolation:
+
+### Detection
+
+Before creating a worktree, check:
+
+1. **Is worktree already exists?**
+   ```bash
+   git worktree list | grep <change-id>
+   ```
+   If exists → switch to it
+
+2. **Are we already in a worktree?**
+   ```bash
+   GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
+   GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+   if [ "$GIT_DIR" != "$GIT_COMMON" ]; then
+     echo "In worktree"
+   fi
+   ```
+   If in different worktree → prompt user to switch
+
+### Creation
+
+To create a worktree:
+
+1. **Check .worktrees/ is in .gitignore**
+   ```bash
+   git check-ignore -q .worktrees 2>/dev/null
+   ```
+   If not ignored → add to .gitignore and commit
+
+2. **Create worktree**
+   ```bash
+   git worktree add .worktrees/<change-id> -b <change-id>
+   ```
+
+3. **Change to worktree directory**
+   ```bash
+   cd .worktrees/<change-id>
+   ```
+
+### Cleanup
+
+Worktrees are cleaned up in `/team-archive`. Do NOT manually delete worktrees.
+
 ## Spec Compliance Review (After ALL tasks)
 
 After all tasks complete, perform spec compliance review:
