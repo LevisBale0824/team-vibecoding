@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从个人 Prompt 到团队 AI 交付流水线</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES — DARK TECH / CREATIVE VOLTAGE
+   =========================================== */
+:root {
+    --bg-primary: #06080f;
+    --bg-secondary: #0c1020;
+    --bg-card: #111827;
+    --bg-elevated: #1a2237;
+    --text-primary: #e8ecf4;
+    --text-secondary: #8892a8;
+    --text-muted: #5a6478;
+    --accent-blue: #2563eb;
+    --accent-cyan: #06d6a0;
+    --accent-neon: #d4ff00;
+    --accent-orange: #ff6b35;
+    --accent-pink: #f472b6;
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-accent: rgba(37,99,235,0.3);
+
+    --font-display: 'Syne', 'Noto Sans SC', sans-serif;
+    --font-body: 'DM Sans', 'Noto Sans SC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --title-size: clamp(2rem, 6vw, 5rem);
+    --h2-size: clamp(1.5rem, 4vw, 2.8rem);
+    --h3-size: clamp(1rem, 2.2vw, 1.5rem);
+    --body-size: clamp(0.78rem, 1.3vw, 1rem);
+    --small-size: clamp(0.6rem, 0.9vw, 0.78rem);
+    --code-size: clamp(0.6rem, 0.85vw, 0.75rem);
+
+    --slide-padding: clamp(1.5rem, 5vw, 5rem);
+    --content-gap: clamp(0.6rem, 2vw, 1.5rem);
+    --element-gap: clamp(0.3rem, 1vw, 0.8rem);
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration: 0.6s;
+}
+
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   =========================================== */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+    overflow: hidden;
+    padding: var(--slide-padding);
+}
+.card, .container, .content-box {
+    max-width: min(90vw, 1000px);
+    max-height: min(80vh, 700px);
+}
+.feature-list, .bullet-list {
+    gap: clamp(0.4rem, 1vh, 1rem);
+}
+.feature-list li, .bullet-list li {
+    font-size: var(--body-size);
+    line-height: 1.5;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+img, .image-container {
+    max-width: 100%;
+    max-height: min(50vh, 400px);
+    object-fit: contain;
+}
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+        --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+        --h2-size: clamp(1rem, 3vw, 1.75rem);
+    }
+}
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+        --title-size: clamp(1.1rem, 4vw, 2rem);
+        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+    }
+    .nav-dots, .keyboard-hint, .decorative { display: none; }
+}
+@media (max-height: 500px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 2vw, 1rem);
+        --title-size: clamp(1rem, 3.5vw, 1.5rem);
+        --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+        --body-size: clamp(0.65rem, 1vw, 0.85rem);
+    }
+}
+@media (max-width: 600px) {
+    :root { --title-size: clamp(1.25rem, 7vw, 2.5rem); }
+    .grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+    html { scroll-behavior: auto; }
+}
+
+/* ===========================================
+   BASE STYLES
+   =========================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ===========================================
+   GRID BACKGROUND PATTERN
+   =========================================== */
+.slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===========================================
+   SLIDE NUMBER BADGE
+   =========================================== */
+.slide-number {
+    position: absolute;
+    top: clamp(0.8rem, 2vw, 1.5rem);
+    left: clamp(1rem, 3vw, 3rem);
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    z-index: 2;
+}
+.slide-number span {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+/* ===========================================
+   TYPOGRAPHY
+   =========================================== */
+h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--title-size);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--h3-size);
+    line-height: 1.3;
+}
+p, li {
+    font-size: var(--body-size);
+    line-height: 1.6;
+    color: var(--text-secondary);
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ===========================================
+   ACCENT ELEMENTS
+   =========================================== */
+.accent-line {
+    width: clamp(40px, 6vw, 80px);
+    height: 3px;
+    background: var(--accent-blue);
+    border-radius: 2px;
+}
+.accent-dot {
+    width: 8px; height: 8px;
+    background: var(--accent-neon);
+    border-radius: 50%;
+    display: inline-block;
+}
+.badge {
+    display: inline-block;
+    padding: clamp(2px, 0.4vw, 6px) clamp(8px, 1.2vw, 16px);
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.badge-blue { background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); }
+.badge-cyan { background: rgba(6,214,160,0.12); color: var(--accent-cyan); border: 1px solid rgba(6,214,160,0.3); }
+.badge-neon { background: rgba(212,255,0,0.12); color: var(--accent-neon); border: 1px solid rgba(212,255,0,0.3); }
+.badge-orange { background: rgba(255,107,53,0.12); color: var(--accent-orange); border: 1px solid rgba(255,107,53,0.3); }
+.badge-pink { background: rgba(244,114,182,0.12); color: var(--accent-pink); border: 1px solid rgba(244,114,182,0.3); }
+
+/* ===========================================
+   CODE / TERMINAL BLOCKS
+   =========================================== */
+.terminal {
+    background: #0a0e1a;
+    border: 1px solid var(--border-subtle);
+    border-radius: clamp(6px, 1vw, 12px);
+    padding: clamp(0.6rem, 1.5vw, 1.2rem) clamp(0.8rem, 2vw, 1.5rem);
+    font-family: var(--font-mono);
+    font-size: var(--code-size);
+    line-height: 1.7;
+    color: var(--text-secondary);
+    overflow: auto;
+    max-height: min(60vh, 420px);
+    position: relative;
+    white-space: pre;
+}
+.terminal::before {
+    content: '● ● ●';
+    display: block;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.3em;
+    margin-bottom: clamp(0.3rem, 0.8vw, 0.6rem);
+}
+.terminal .prompt { color: var(--accent-cyan); }
+.terminal .cmd { color: var(--accent-neon); }
+.terminal .output { color: var(--text-muted); }
+.terminal .highlight { color: var(--accent-orange); font-weight: 600; }
+.terminal .key { color: var(--accent-pink); }
+.terminal .comment { color: #4a5568; font-style: italic; }
+
+/* ===========================================
+   CARDS
+   =========================================== */
+.card-grid {
+    display: grid;
+    gap: clamp(0.5rem, 1.2vw, 1rem);
+}
+.card-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 800px) {
+    .card-grid.cols-2, .card-grid.cols-3, .card-grid.cols-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: clamp(6px, 1vw, 12px);
+    padding: clamp(0.6rem, 1.5vw, 1.2rem);
+    position: relative;
+    overflow: hidden;
+}
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+}
+.info-card.blue::before { background: var(--accent-blue); }
+.info-card.cyan::before { background: var(--accent-cyan); }
+.info-card.neon::before { background: var(--accent-neon); }
+.info-card.orange::before { background: var(--accent-orange); }
+.info-card.pink::before { background: var(--accent-pink); }
+
+.info-card h4 {
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: clamp(0.2rem, 0.5vw, 0.5rem);
+}
+.info-card.blue h4 { color: #60a5fa; }
+.info-card.cyan h4 { color: var(--accent-cyan); }
+.info-card.neon h4 { color: var(--accent-neon); }
+.info-card.orange h4 { color: var(--accent-orange); }
+.info-card.pink h4 { color: var(--accent-pink); }
+
+.info-card p {
+    font-size: var(--small-size);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ===========================================
+   FLOW PIPELINE
+   =========================================== */
+.pipeline {
+    display: flex;
+    align-items: center;
+    gap: clamp(2px, 0.3vw, 4px);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.pipeline .step {
+    padding: clamp(4px, 0.6vw, 8px) clamp(8px, 1.2vw, 16px);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: var(--code-size);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.pipeline .arrow {
+    color: var(--text-muted);
+    font-size: var(--small-size);
+}
+.step-active { background: var(--accent-blue); color: #fff; }
+.step-done { background: rgba(6,214,160,0.15); color: var(--accent-cyan); border: 1px solid rgba(6,214,160,0.3); }
+.step-pending { background: var(--bg-elevated); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+
+/* ===========================================
+   CONVERSATION EXCERPT
+   =========================================== */
+.convo {
+    background: #080c18;
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 clamp(6px, 1vw, 10px) clamp(6px, 1vw, 10px) 0;
+    padding: clamp(0.5rem, 1.2vw, 1rem) clamp(0.6rem, 1.5vw, 1.2rem);
+    font-size: var(--small-size);
+    line-height: 1.6;
+    max-height: min(55vh, 380px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+.convo .user-msg {
+    color: var(--accent-cyan);
+    font-weight: 500;
+}
+.convo .ai-msg {
+    color: var(--text-secondary);
+}
+.convo .ai-label {
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: var(--small-size);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.convo .section-label {
+    color: var(--accent-neon);
+    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: var(--small-size);
+}
+
+/* ===========================================
+   VERIFICATION TABLE
+   =========================================== */
+.verify-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--small-size);
+}
+.verify-table th {
+    text-align: left;
+    padding: clamp(3px, 0.4vw, 6px) clamp(6px, 0.8vw, 10px);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: clamp(0.55rem, 0.75vw, 0.7rem);
+}
+.verify-table td {
+    padding: clamp(3px, 0.4vw, 6px) clamp(6px, 0.8vw, 10px);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+    font-size: var(--small-size);
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.verify-table .pass { color: var(--accent-cyan); font-weight: 600; }
+.verify-table .warn { color: var(--accent-orange); font-weight: 600; }
+
+/* ===========================================
+   TWO-COLUMN LAYOUT
+   =========================================== */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.8rem, 2vw, 2rem);
+}
+@media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+}
+
+/* ===========================================
+   TITLE SLIDE SPECIFIC
+   =========================================== */
+.title-slide {
+    background:
+        radial-gradient(ellipse at 20% 80%, rgba(37,99,235,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(6,214,160,0.08) 0%, transparent 50%),
+        var(--bg-primary);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.title-slide h1 {
+    background: linear-gradient(135deg, #fff 0%, #a0b4d0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.title-slide .subtitle {
+    color: var(--text-secondary);
+    font-size: var(--h3-size);
+    margin-top: var(--content-gap);
+}
+
+/* ===========================================
+   COMPARISON LAYOUT
+   =========================================== */
+.compare-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: clamp(8px, 1.2vw, 14px);
+    padding: clamp(0.8rem, 1.8vw, 1.5rem);
+    overflow: hidden;
+}
+.compare-col h3 {
+    margin-bottom: var(--element-gap);
+}
+.compare-col ul {
+    list-style: none;
+    padding: 0;
+}
+.compare-col li {
+    padding: clamp(2px, 0.3vw, 4px) 0;
+    font-size: var(--small-size);
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.compare-col li::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+.compare-col.bad li::before { background: #ef4444; }
+.compare-col.good li::before { background: var(--accent-cyan); }
+
+/* ===========================================
+   ANIMATIONS
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity var(--duration) var(--ease-out-expo),
+        transform var(--duration) var(--ease-out-expo);
+}
+.slide.visible .reveal {
+    opacity: 1;
+    transform: translateY(0);
+}
+.reveal:nth-child(1) { transition-delay: 0.05s; }
+.reveal:nth-child(2) { transition-delay: 0.12s; }
+.reveal:nth-child(3) { transition-delay: 0.19s; }
+.reveal:nth-child(4) { transition-delay: 0.26s; }
+.reveal:nth-child(5) { transition-delay: 0.33s; }
+.reveal:nth-child(6) { transition-delay: 0.40s; }
+.reveal:nth-child(7) { transition-delay: 0.47s; }
+.reveal:nth-child(8) { transition-delay: 0.54s; }
+
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity var(--duration) var(--ease-out-expo), transform var(--duration) var(--ease-out-expo);
+}
+.slide.visible .reveal-scale {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity var(--duration) var(--ease-out-expo), transform var(--duration) var(--ease-out-expo);
+}
+.slide.visible .reveal-left {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===========================================
+   PROGRESS BAR
+   =========================================== */
+.progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+    z-index: 9999;
+    transition: width 0.3s var(--ease-out-expo);
+}
+
+/* ===========================================
+   NAV DOTS
+   =========================================== */
+.nav-dots {
+    position: fixed;
+    right: clamp(8px, 1.5vw, 20px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 100;
+}
+.nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    opacity: 0.3;
+    transition: all 0.3s;
+    cursor: pointer;
+    border: none;
+}
+.nav-dot.active {
+    opacity: 1;
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px rgba(37,99,235,0.4);
+}
+
+/* ===========================================
+   KEYBOARD HINT
+   =========================================== */
+.keyboard-hint {
+    position: fixed;
+    bottom: clamp(6px, 1vw, 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: clamp(0.5rem, 0.7vw, 0.65rem);
+    color: var(--text-muted);
+    opacity: 0.4;
+    z-index: 100;
+    letter-spacing: 0.05em;
+}
+
+/* ===========================================
+   DEPENDENCY FLOW CHART (CSS visual)
+   =========================================== */
+.flow-chart {
+    background: #080c18;
+    border-radius: clamp(6px, 1vw, 10px);
+    padding: clamp(0.5rem, 1.5vw, 1.2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 0.8vh, 8px);
+}
+.flow-row {
+    display: flex;
+    align-items: center;
+    gap: clamp(2px, 0.4vw, 6px);
+    flex-wrap: wrap;
+}
+.flow-node {
+    font-family: var(--font-mono);
+    font-size: clamp(0.55rem, 1.1vw, 0.75rem);
+    font-weight: 600;
+    padding: clamp(2px, 0.4vw, 5px) clamp(4px, 0.6vw, 8px);
+    border-radius: 4px;
+    background: rgba(6, 214, 160, 0.12);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(6, 214, 160, 0.3);
+    white-space: nowrap;
+    position: relative;
+}
+.flow-node.critical {
+    background: rgba(37, 99, 235, 0.15);
+    color: #93c5fd;
+    border-color: rgba(37, 99, 235, 0.4);
+}
+.flow-node.warn {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--accent-orange);
+    border-color: rgba(255, 107, 53, 0.4);
+}
+.flow-arrow {
+    color: rgba(148, 163, 184, 0.5);
+    font-size: clamp(0.5rem, 1vw, 0.7rem);
+    flex-shrink: 0;
+}
+.flow-arrow.down {
+    display: none;
+}
+.flow-label {
+    font-size: clamp(0.45rem, 0.9vw, 0.6rem);
+    color: var(--text-muted);
+    margin-left: 2px;
+}
+/* Vertical connector between rows */
+.flow-vline {
+    width: 2px;
+    height: clamp(4px, 0.6vh, 8px);
+    background: rgba(148, 163, 184, 0.3);
+    margin-left: clamp(1rem, 2.5vw, 2rem);
+}
+@media (max-width: 700px) {
+    .flow-node { font-size: 0.55rem; padding: 2px 4px; }
+    .flow-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- === PROGRESS BAR === -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- === NAV DOTS === -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- === KEYBOARD HINT === -->
+<div class="keyboard-hint">Arrow keys / Space / Scroll to navigate</div>
+
+<!-- ===========================================
+     SLIDE 01: TITLE
+     =========================================== -->
+<section class="slide title-slide" data-title="Title">
+    <div class="slide-content" style="text-align:center;">
+        <div class="reveal" style="margin-bottom:var(--element-gap);">
+            <span class="badge badge-blue">Team Vibecoding</span>
+        </div>
+        <h1 class="reveal" style="margin-bottom:var(--content-gap);">
+            从个人 Prompt<br>到团队 AI 交付流水线
+        </h1>
+        <p class="reveal subtitle">结构化 AI 协作工作流 + 实战案例分享</p>
+        <div class="reveal" style="margin-top:var(--content-gap);display:flex;gap:clamp(6px,1vw,12px);justify-content:center;flex-wrap:wrap;">
+            <span class="badge badge-cyan">OpenSpec</span>
+            <span class="badge badge-neon">Guard Skills</span>
+            <span class="badge badge-orange">TDD</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 02: THE PROBLEM
+     =========================================== -->
+<section class="slide" data-title="问题">
+    <div class="slide-number"><span>02</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">个人 Prompt 的困境</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-3 reveal-scale">
+            <div class="info-card blue">
+                <h4>不确定性</h4>
+                <p>同一个需求，每次 Prompt 结果不同。AI 可能过度设计，也可能遗漏边界情况。</p>
+            </div>
+            <div class="info-card orange">
+                <h4>质量波动</h4>
+                <p>没有质量门禁。跳过测试、忽略错误处理、忘记安全检查...全靠 AI "心情"。</p>
+            </div>
+            <div class="info-card pink">
+                <h4>不可复现</h4>
+                <p>今天的方案明天无法复现。没有规格文档、没有变更记录、没有验收标准。</p>
+            </div>
+        </div>
+        <div class="terminal reveal" style="margin-top:var(--content-gap);">
+<span class="comment"># 典型的个人 Prompt 模式</span>
+<span class="prompt">&gt; </span><span class="cmd">帮我写一个用户注册接口</span>
+<span class="output">... AI 直接生成代码，没有需求分析、没有测试、没有验证</span>
+<span class="prompt">&gt; </span><span class="cmd">再加一个登录功能</span>
+<span class="output">... 范围不断扩大，质量不断下降</span>
+<span class="prompt">&gt; </span><span class="cmd">修一下这个 bug</span>
+<span class="output">... 补丁摞补丁，技术债越积越多</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 03: THE SOLUTION
+     =========================================== -->
+<section class="slide" data-title="方案">
+    <div class="slide-number"><span>03</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">Team Vibecoding — 团队 AI 交付流水线</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <p class="reveal" style="margin-bottom:var(--content-gap);">
+            基于 OpenSpec 的结构化 AI 协作工具。通过 8 步流水线 + Guard Skills 质量门禁，
+            将 AI 编程从"随意对话"升级为"可复现、可验证、可持续改进"的工程化流程。
+        </p>
+        <div class="pipeline reveal" style="margin-bottom:var(--content-gap);">
+            <span class="step step-active">explore</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">propose</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">plan</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">apply</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">verify</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">review</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">archive</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">retro</span>
+        </div>
+        <div class="card-grid cols-4 reveal-scale">
+            <div class="info-card cyan">
+                <h4>Spec-First</h4>
+                <p>先写规格，再写代码</p>
+            </div>
+            <div class="info-card neon">
+                <h4>Evidence-Based</h4>
+                <p>没有证据 = 没有完成</p>
+            </div>
+            <div class="info-card orange">
+                <h4>Guard Skills</h4>
+                <p>每步都有质量门禁</p>
+            </div>
+            <div class="info-card pink">
+                <h4>Self-Evolving</h4>
+                <p>Bad Case → 规则进化</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 04: CASE STUDY INTRO
+     =========================================== -->
+<section class="slide" data-title="实战案例">
+    <div class="slide-number"><span>04</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-orange reveal" style="margin-bottom:var(--element-gap);">实战案例</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">元数据血缘可视化 — Go 桌面应用</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="reveal">
+                <p style="margin-bottom:var(--element-gap);">
+                    用一个真实项目走完 Team Vibecoding 全流程。从零开始构建一个基于 Go 的元数据血缘可视化桌面工具。
+                </p>
+                <div style="display:flex;flex-direction:column;gap:var(--element-gap);">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="badge badge-blue">Wails v2</span>
+                        <span style="font-size:var(--small-size);color:var(--text-secondary);">Go + Vue 3 桌面框架</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="badge badge-cyan">AntV G6</span>
+                        <span style="font-size:var(--small-size);color:var(--text-secondary);">DAG 图形渲染</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="badge badge-neon">gonum/graph</span>
+                        <span style="font-size:var(--small-size);color:var(--text-secondary);">有向图数据模型</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="badge badge-orange">YAML</span>
+                        <span style="font-size:var(--small-size);color:var(--text-secondary);">血缘配置文件</span>
+                    </div>
+                </div>
+            </div>
+            <div class="convo reveal-left">
+                <div class="user-msg">/team-explore 现在我需要做一个可视化的元数据血缘展示，基于go语言开发</div>
+                <br>
+                <div class="ai-label">AI</div>
+                <div class="ai-msg">让我先了解项目现状和需求，然后给出分析建议。</div>
+                <br>
+                <div class="section-label">第一步：了解当前状态</div>
+                <div class="ai-msg">这是一个全新的项目（空目录，仅有 Team 工作流的配置文件）。</div>
+                <br>
+                <div class="section-label">第二步：需求澄清</div>
+                <div class="ai-msg">需要先和你确认几个关键问题：</div>
+                <div class="ai-msg">· 血缘数据来源？ → 混合来源</div>
+                <div class="ai-msg">· 展示粒度？ → 表级 + 字段级</div>
+                <div class="ai-msg">· 产品形态？ → 独立桌面应用</div>
+                <div class="ai-msg">· 数据规模？ → 小型 (&lt;100节点)</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 05: /TEAM-EXPLORE
+     =========================================== -->
+<section class="slide" data-title="Explore">
+    <div class="slide-number"><span>05</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-blue reveal" style="margin-bottom:var(--element-gap);">Step 1</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-explore — 需求探索</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="reveal">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-cyan);">核心原则</h3>
+                <ul style="list-style:none;padding:0;">
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 纯分析阶段，<strong style="color:var(--accent-orange);">零代码产出</strong></li>
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 调研 2-3 个技术方案并做权衡</li>
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 输出推荐方案 + 开放问题</li>
+                    <li><span class="accent-dot"></span> 派遣多个 Agent 并行调研</li>
+                </ul>
+                <div class="terminal" style="margin-top:var(--content-gap);">
+<span class="comment"># 并行调研</span>
+<span class="highlight">2 agents finished</span>
+├─ <span class="cmd">Research Go desktop frameworks</span> · 14 tool uses
+└─ <span class="cmd">Research Go SQL parsers</span> · 22 tool uses
+                </div>
+            </div>
+            <div class="convo reveal-left">
+                <div class="section-label">探索总结</div>
+                <br>
+                <div class="ai-label">AI</div>
+                <div class="ai-msg"><strong>做什么：</strong>构建一个基于 Go 的独立桌面应用，用于可视化展示元数据血缘关系（表级 + 字段级）</div>
+                <br>
+                <div class="ai-msg"><strong>谁受益：</strong>数据工程师、数据分析师——需要理解数据从哪里来、到哪里去</div>
+                <br>
+                <div class="ai-msg"><strong>成功标准：</strong></div>
+                <div class="ai-msg">1. 能从多种来源获取血缘关系（SQL 解析 + 手动配置）</div>
+                <div class="ai-msg">2. 交互式 DAG 图形展示，支持缩放、搜索、过滤</div>
+                <div class="ai-msg">3. 表级和字段级血缘的自由切换</div>
+                <br>
+                <div class="ai-msg"><strong style="color:var(--accent-neon);">推荐方案：</strong>Wails v2 + AntV G6 + SQLGlot Sidecar + YAML</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 06: EXPLORE OUTPUT — TECH COMPARISON
+     =========================================== -->
+<section class="slide" data-title="技术方案对比">
+    <div class="slide-number"><span>06</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-blue reveal" style="margin-bottom:var(--element-gap);">Explore 产出</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">技术方案对比</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="reveal-scale">
+            <table class="verify-table" style="margin-bottom:var(--content-gap);">
+                <thead>
+                    <tr><th>框架</th><th>优势</th><th>劣势</th><th>适合度</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="color:var(--accent-neon);font-weight:600;">Wails v2</td>
+                        <td>丰富的图形库生态（G6/D3）；开发速度快</td>
+                        <td>依赖 WebView2 运行时</td>
+                        <td class="pass">最高</td>
+                    </tr>
+                    <tr>
+                        <td>Fyne</td>
+                        <td>纯 Go 单一二进制；无外部依赖</td>
+                        <td>无图形库生态，需手绘 DAG</td>
+                        <td>中</td>
+                    </tr>
+                    <tr>
+                        <td>Gio</td>
+                        <td>GPU 加速渲染性能最好</td>
+                        <td>社区小，生态薄弱</td>
+                        <td style="color:var(--accent-orange);">低</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-grid cols-3 reveal-scale">
+            <div class="info-card neon">
+                <h4>★ Insight</h4>
+                <p>血缘可视化本质是图形渲染问题。Web 生态的 G6/D3 在 DAG 渲染方面领先 Go 原生方案 5 年以上。</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>推荐架构</h4>
+                <p>Wails 让你"用 Go 写后端 + 用 Web 画图"</p>
+            </div>
+            <div class="info-card blue">
+                <h4>并行调研</h4>
+                <p>2 个 Agent 同时调研桌面框架和 SQL 解析，大幅缩短探索时间</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 07: /TEAM-PROPOSE
+     =========================================== -->
+<section class="slide" data-title="Propose">
+    <div class="slide-number"><span>07</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-cyan reveal" style="margin-bottom:var(--element-gap);">Step 2</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-propose — OpenSpec 提案</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <p class="reveal" style="margin-bottom:var(--content-gap);">
+            创建正式的 OpenSpec 变更提案。每条需求必须包含 <span style="color:var(--accent-neon);font-family:var(--font-mono);">SHALL</span> 或
+            <span style="color:var(--accent-neon);font-family:var(--font-mono);">MUST</span>，
+            使用 <span style="color:var(--accent-cyan);font-family:var(--font-mono);">WHEN/THEN</span> 场景描述。
+        </p>
+        <div class="terminal reveal" style="margin-bottom:var(--content-gap);">
+<span class="comment"># OpenSpec 工件结构</span>
+openspec/changes/<span class="highlight">init-lineage-viz-mvp</span>/
+├── <span class="cmd">proposal.md</span>   <span class="comment"># 为什么做、做什么、影响范围</span>
+├── <span class="cmd">design.md</span>     <span class="comment"># 架构决策、技术选型理由</span>
+├── <span class="cmd">tasks.md</span>      <span class="comment"># 可执行的任务拆分（每项 ≤ 1h）</span>
+└── specs/
+    ├── <span class="cmd">yaml-lineage-config/spec.md</span>
+    ├── <span class="cmd">table-lineage-graph/spec.md</span>
+    ├── <span class="cmd">dag-visualization/spec.md</span>
+    └── <span class="cmd">wails-project-scaffold/spec.md</span>
+        </div>
+        <div class="convo reveal">
+            <div class="ai-label">AI</div>
+            <div class="ai-msg"><span class="highlight">openspec validate init-lineage-viz-mvp --strict</span></div>
+            <div class="ai-msg" style="color:var(--accent-cyan);">Change 'init-lineage-viz-mvp' is valid ✅</div>
+            <br>
+            <div class="ai-msg"><strong>产出：</strong>6 个任务组，17 个子任务，预估总工时约 7.5 小时</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 08: PROPOSE — SPEC DETAIL
+     =========================================== -->
+<section class="slide" data-title="Spec 详情">
+    <div class="slide-number"><span>08</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-cyan reveal" style="margin-bottom:var(--element-gap);">Propose 产出</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">OpenSpec 规格示例</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="terminal reveal">
+<span class="comment"># specs/table-lineage-graph/spec.md</span>
+
+## <span class="cmd">ADDED</span> Requirements
+
+### Requirement: Build directed graph
+The system <span class="highlight">SHALL</span> construct a
+directed acyclic graph (DAG) where
+nodes represent tables and edges
+represent dependency relationships.
+
+#### <span class="key">WHEN</span> the configuration defines
+dependencies A→B→C
+#### <span class="key">THEN</span> the system builds a graph
+with 3 nodes and 2 directed edges
+
+#### <span class="key">WHEN</span> circular dependency exists
+#### <span class="key">THEN</span> the system <span class="highlight">MUST</span> return
+an error with the cycle path
+            </div>
+            <div class="reveal-left">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-cyan);">4 个能力模块</h3>
+                <table class="verify-table">
+                    <thead><tr><th>Capability</th><th>描述</th></tr></thead>
+                    <tbody>
+                        <tr><td style="color:var(--accent-neon);">wails-project-scaffold</td><td>Wails v2 + Vue 3 + Go 项目结构</td></tr>
+                        <tr><td style="color:var(--accent-neon);">yaml-lineage-config</td><td>YAML 配置解析与验证</td></tr>
+                        <tr><td style="color:var(--accent-neon);">table-lineage-graph</td><td>有向图数据模型 + 序列化</td></tr>
+                        <tr><td style="color:var(--accent-neon);">dag-visualization</td><td>AntV G6 DAG 渲染 + 交互</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:var(--content-gap);padding:clamp(0.4rem,1vw,0.8rem);background:rgba(6,214,160,0.08);border-radius:8px;border:1px solid rgba(6,214,160,0.2);">
+                    <p style="font-size:var(--small-size);color:var(--accent-cyan);">
+                        <strong>硬性约束：</strong>每个需求必须包含 SHALL/MUST。<br>
+                        硬阻塞的开放问题会阻止流程继续。<br>
+                        范围蔓延会被显式拒绝。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 09: /TEAM-PLAN
+     =========================================== -->
+<section class="slide" data-title="Plan">
+    <div class="slide-number"><span>09</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-neon reveal" style="margin-bottom:var(--element-gap);">Step 3</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-plan — 任务审查与依赖分析</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="reveal">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-neon);">审查要点</h3>
+                <ul style="list-style:none;padding:0;">
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 每个任务 ≤ 1小时</li>
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 依赖关系无环</li>
+                    <li style="margin-bottom:var(--element-gap);"><span class="accent-dot"></span> 每个任务有验证方法</li>
+                    <li><span class="accent-dot"></span> 需求覆盖率 100%</li>
+                </ul>
+                <div style="margin-top:var(--content-gap);padding:clamp(0.4rem,1vw,0.8rem);background:rgba(212,255,0,0.06);border-radius:8px;border:1px solid rgba(212,255,0,0.15);">
+                    <p style="font-size:var(--small-size);color:var(--accent-neon);">
+                        <strong>发现并修复：</strong>Task 2.3（依赖类型处理）被标记为孤立任务——无后续任务依赖它。实际 Task 3.1（图构建器）需要它的类型注解。自动补全了 3.1 → 2.3 依赖。
+                    </p>
+                </div>
+            </div>
+            <div class="flow-chart reveal-left">
+                <!-- Frontend path (critical) -->
+                <div class="flow-row">
+                    <span class="flow-node critical">1.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node critical">5.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node critical">5.2</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">5.3</span><span class="flow-label">zoom</span>
+                </div>
+                <div class="flow-row" style="padding-left:clamp(2rem,4.5vw,4rem);">
+                    <span class="flow-arrow">├→</span><span class="flow-node">5.4</span><span class="flow-label">search</span>
+                </div>
+                <div class="flow-row" style="padding-left:clamp(2rem,4.5vw,4rem);">
+                    <span class="flow-arrow">└→</span><span class="flow-node critical">5.5</span><span class="flow-label">detail</span>
+                </div>
+                <!-- Backend path -->
+                <div class="flow-vline"></div>
+                <div class="flow-row">
+                    <span class="flow-node">1.2</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">2.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">2.2</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">3.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">3.2</span><span class="flow-label">cycle det.</span>
+                </div>
+                <div class="flow-row" style="padding-left:clamp(3rem,6vw,5rem);">
+                    <span class="flow-arrow">└→</span><span class="flow-node warn">2.3 ⚠</span><span class="flow-label">orphan fixed</span>
+                </div>
+                <div class="flow-row" style="padding-left:clamp(5rem,9vw,8rem);">
+                    <span class="flow-arrow">└→</span><span class="flow-node">3.3</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">4.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node">4.2</span>
+                </div>
+                <!-- Merge → Integration -->
+                <div class="flow-vline"></div>
+                <div class="flow-row" style="justify-content:center;">
+                    <span class="flow-node critical">6.1</span><span class="flow-arrow">→</span>
+                    <span class="flow-node critical">6.2</span><span class="flow-label">integration</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 10: PLAN — CRITICAL PATH
+     =========================================== -->
+<section class="slide" data-title="关键路径">
+    <div class="slide-number"><span>10</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-neon reveal" style="margin-bottom:var(--element-gap);">Plan 产出</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">关键路径与并行机会</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-3 reveal-scale" style="margin-bottom:var(--content-gap);">
+            <div class="info-card neon">
+                <h4>总任务</h4>
+                <p>6 个任务组，17 个子任务</p>
+                <p style="color:var(--accent-neon);font-weight:600;">预估总工时 ~7.5h</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>关键路径</h4>
+                <p>1.1→5.1→5.2→5.5→6.1→6.2</p>
+                <p style="color:var(--accent-cyan);font-weight:600;">前端路径 ≈ 2.75h</p>
+            </div>
+            <div class="info-card blue">
+                <h4>并行开发</h4>
+                <p>后端(2→3→4) + 前端(5) 可并行</p>
+                <p style="color:#60a5fa;font-weight:600;">压缩到 ≈ 4.5h</p>
+            </div>
+        </div>
+        <div class="convo reveal">
+            <div class="ai-label">Planning Guard</div>
+            <div class="ai-msg" style="color:var(--accent-cyan);">Verdict: <strong>Ready</strong> — all checks pass, no blocking issues</div>
+            <br>
+            <div class="ai-msg">
+                <span class="highlight">Granularity:</span> ✅ Largest task 60 min (borderline)<br>
+                <span class="highlight">Dependencies:</span> ✅ Fixed orphan 2.3, no circular deps<br>
+                <span class="highlight">Verification:</span> ✅ All 17 tasks have specific commands<br>
+                <span class="highlight">Coverage:</span> ✅ Every requirement covered by tasks
+            </div>
+            <br>
+            <div class="ai-msg" style="color:var(--text-muted);">Next → <span class="cmd">/team-apply init-lineage-viz-mvp</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 11: /TEAM-APPLY — TDD
+     =========================================== -->
+<section class="slide" data-title="Apply">
+    <div class="slide-number"><span>11</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-orange reveal" style="margin-bottom:var(--element-gap);">Step 4</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-apply — TDD 增量实现</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <p class="reveal" style="margin-bottom:var(--content-gap);">
+            严格一次一个任务。TDD 循环：定义验证 → 先写测试 → 最小实现 → 验证通过 → 标记完成。
+        </p>
+        <div class="pipeline reveal" style="margin-bottom:var(--content-gap);">
+            <span class="step step-done">定义验证</span>
+            <span class="arrow">→</span>
+            <span class="step step-done">写测试</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">最小实现</span>
+            <span class="arrow">→</span>
+            <span class="step step-pending">验证通过</span>
+            <span class="arrow">→</span>
+            <span class="step step-pending">标记完成</span>
+        </div>
+        <div class="two-col">
+            <div class="terminal reveal" style="font-size:clamp(0.55rem,0.75vw,0.68rem);">
+<span class="comment"># Task 2.1: 先写测试</span>
+<span class="cmd">Write(lineage/model_test.go)</span>
+<span class="output">func TestTableConfigYAMLDeserialization(t *testing.T) {</span>
+<span class="output">  input := `name: raw_users</span>
+<span class="output">columns: [user_id, name, email]`</span>
+<span class="output">  var tc TableConfig</span>
+<span class="output">  err := yaml.Unmarshal([]byte(input), &tc)</span>
+<span class="output">  // assert fields match...</span>
+<span class="output">}</span>
+            </div>
+            <div class="terminal reveal-left" style="font-size:clamp(0.55rem,0.75vw,0.68rem);">
+<span class="comment"># Task 2.1: 再写实现</span>
+<span class="cmd">Write(lineage/model.go)</span>
+<span class="key">type</span> <span class="highlight">TableConfig</span> <span class="key">struct</span> {
+  Name    string   `yaml:"name" json:"name"`
+  Columns []string `yaml:"columns" json:"columns"`
+  ...
+}
+<span class="comment"># Verify</span>
+<span class="cmd">go test ./lineage/ -v</span>
+<span class="output" style="color:var(--accent-cyan);">--- PASS: TestTableConfigYAMLDeserialization (0.00s)</span>
+<span class="output" style="color:var(--accent-cyan);">All 3 tests pass.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 12: APPLY — REAL CONVERSATION
+     =========================================== -->
+<section class="slide" data-title="TDD 实战">
+    <div class="slide-number"><span>12</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-orange reveal" style="margin-bottom:var(--element-gap);">Apply 实战</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">Task 3.2 — 循环检测的 TDD 过程</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="convo reveal">
+            <div class="section-label">1. 先写测试（定义期望行为）</div>
+            <div class="ai-msg" style="font-family:var(--font-mono);font-size:var(--code-size);">
+func <span style="color:var(--accent-cyan);">TestBuildGraphWithCycle</span>(t *testing.T) {<br>
+&nbsp;&nbsp;config := &LineageConfig{ Tables: ..., Dependencies: [A→B, B→C, C→A] }<br>
+&nbsp;&nbsp;_, err := BuildGraph(config)<br>
+&nbsp;&nbsp;// 期望返回包含 "cycle" 的错误<br>
+}
+            </div>
+            <br>
+            <div class="section-label">2. 实现最小代码</div>
+            <div class="ai-msg">在图构建器中添加 DFS 循环检测 + 自环检查（修复 gonum panic）</div>
+            <br>
+            <div class="section-label">3. 验证</div>
+            <div style="font-family:var(--font-mono);font-size:var(--code-size);">
+                <span style="color:var(--accent-cyan);">--- PASS: TestBuildGraphWithCycle (0.00s)</span><br>
+                <span style="color:var(--accent-cyan);">--- PASS: TestBuildGraphSelfLoop (0.00s)</span><br>
+                <span style="color:var(--accent-cyan);">--- PASS: TestBuildGraphNoCycle (0.00s)</span>
+            </div>
+            <br>
+            <div class="section-label">4. 发现意外问题</div>
+            <div class="ai-msg">gonum 对自环会 <span style="color:var(--accent-orange);">panic</span>，需要在加边前先检查 <span style="color:var(--accent-neon);">fromNode.ID() == toNode.ID()</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 13: APPLY — GUARD RULES
+     =========================================== -->
+<section class="slide" data-title="防护规则">
+    <div class="slide-number"><span>13</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-orange reveal" style="margin-bottom:var(--element-gap);">Implementation Guard</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">严格的防护规则</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-2 reveal-scale">
+            <div class="info-card blue">
+                <h4>禁止项</h4>
+                <p>🚫 "顺手重构一下" — While I'm here<br>
+                   🚫 "跳过测试" — 削弱测试来通过<br>
+                   🚫 "先多实现几个" — 一次只能做一个任务<br>
+                   🚫 "范围扩展" — 不更新 OpenSpec 就加功能</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>强制项</h4>
+                <p>✅ 测试先行（TDD）<br>
+                   ✅ 验证命令实际执行（非推断）<br>
+                   ✅ 完成证据记录到 tasks.md<br>
+                   ✅ 设计问题 → 先更新 OpenSpec</p>
+            </div>
+        </div>
+        <div class="terminal reveal" style="margin-top:var(--content-gap);">
+<span class="comment"># 完成后的 tasks.md 示例</span>
+- [x] <span class="highlight">3.2</span> Implement cycle detection in graph construction
+  - Requirement: table-lineage-graph
+  - Verification: <span class="cmd">go test ./lineage/ -run TestBuildGraphWith -v</span>
+  - Result: <span style="color:var(--accent-cyan);">3 tests passed</span> (3-node cycle, self-loop, no-cycle DAG)
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 14: /TEAM-VERIFY
+     =========================================== -->
+<section class="slide" data-title="Verify">
+    <div class="slide-number"><span>14</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-pink reveal" style="margin-bottom:var(--element-gap);">Step 5</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-verify — 四层验证体系</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-4 reveal-scale" style="margin-bottom:var(--content-gap);">
+            <div class="info-card blue">
+                <h4>Layer 1</h4>
+                <p><strong>OpenSpec 验证</strong></p>
+                <p>规格文件结构完整性</p>
+                <p style="color:var(--accent-cyan);">✅ PASS</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>Layer 2</h4>
+                <p><strong>任务完成度</strong></p>
+                <p>17/17 + 证据</p>
+                <p style="color:var(--accent-cyan);">✅ 17/17</p>
+            </div>
+            <div class="info-card neon">
+                <h4>Layer 3</h4>
+                <p><strong>项目检查</strong></p>
+                <p>lint + test + build</p>
+                <p style="color:var(--accent-cyan);">✅ ALL PASS</p>
+            </div>
+            <div class="info-card orange">
+                <h4>Layer 4</h4>
+                <p><strong>验收标准</strong></p>
+                <p>AC → 证据映射</p>
+                <p style="color:var(--accent-cyan);">✅ MAPPED</p>
+            </div>
+        </div>
+        <div class="terminal reveal">
+<span class="highlight">Layer 3: Project Checks</span>
+<span class="cmd">go vet ./...</span>           <span style="color:var(--accent-cyan);">✅ No issues</span>
+<span class="cmd">go test ./lineage/ -v</span>  <span style="color:var(--accent-cyan);">✅ 23/23 passed in 0.369s</span>
+<span class="cmd">go build ./...</span>        <span style="color:var(--accent-cyan);">✅ BUILD SUCCESS</span>
+<span class="cmd">npx vite build</span>        <span style="color:var(--accent-cyan);">✅ 1298 modules transformed</span>
+<span class="cmd">wails build</span>           <span style="color:var(--accent-cyan);">✅ lineage-viz.exe (14.3 MB)</span>
+
+<span class="output" style="color:var(--accent-cyan);font-weight:600;">Verdict: ✅ READY — All 4 layers pass.</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 15: VERIFY — AC MAPPING
+     =========================================== -->
+<section class="slide" data-title="AC 映射">
+    <div class="slide-number"><span>15</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-pink reveal" style="margin-bottom:var(--element-gap);">Verify Layer 4</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">验收标准 → 证据映射</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="reveal-scale">
+            <table class="verify-table">
+                <thead>
+                    <tr><th>Spec</th><th>验收标准</th><th>证据</th><th>状态</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td rowspan="2" style="color:var(--accent-neon);">yaml-config</td>
+                        <td>Valid YAML → graph</td><td>TestParseValidYAML</td><td class="pass">✅</td></tr>
+                    <tr><td>Undefined refs → error</td><td>TestParseUnresolvedRefs</td><td class="pass">✅</td></tr>
+                    <tr><td rowspan="2" style="color:var(--accent-neon);">table-graph</td>
+                        <td>Linear chain A→B→C</td><td>TestBuildGraphLinearChain</td><td class="pass">✅</td></tr>
+                    <tr><td>Cycle → error</td><td>TestBuildGraphWithCycle</td><td class="pass">✅</td></tr>
+                    <tr><td rowspan="2" style="color:var(--accent-neon);">dag-viz</td>
+                        <td>Dagre LR layout</td><td>useGraph.ts — antv-dagre</td><td class="pass">✅</td></tr>
+                    <tr><td>Zoom + Pan</td><td>behaviors: zoom-canvas, drag-canvas</td><td class="pass">✅</td></tr>
+                    <tr><td style="color:var(--accent-neon);">wails</td>
+                        <td>wails build → .exe</td><td>Built in 17s, 14.3 MB</td><td class="pass">✅</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:var(--content-gap);padding:clamp(0.4rem,1vw,0.8rem);background:rgba(244,114,182,0.08);border-radius:8px;border:1px solid rgba(244,114,182,0.15);" class="reveal">
+            <p style="font-size:var(--small-size);color:var(--accent-pink);">
+                <strong>核心原则：</strong>不能从"没有错误"推断"通过"。必须实际运行命令并记录输出。<br>
+                跳过的检查必须列出原因（如 G6 v5 的 d3 类型冲突）。2 个 UI 交互 AC 标为 ⚠（需手动确认）。
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 16: /TEAM-REVIEW
+     =========================================== -->
+<section class="slide" data-title="Review">
+    <div class="slide-number"><span>16</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-blue reveal" style="margin-bottom:var(--element-gap);">Step 6</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">/team-review — 代码审查</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-2 reveal-scale" style="margin-bottom:var(--content-gap);">
+            <div class="info-card blue">
+                <h4>审查维度</h4>
+                <p>✦ 需求对齐 — 代码是否超出 OpenSpec 范围<br>
+                   ✦ 安全检查 — 注入、XSS、密钥泄露<br>
+                   ✦ 测试覆盖 — 关键功能是否有测试<br>
+                   ✦ 代码质量 — 函数长度、嵌套深度<br>
+                   ✦ 回归风险 — 是否影响已有功能</p>
+            </div>
+            <div class="info-card pink">
+                <h4>硬性规则</h4>
+                <p>🚫 CRITICAL 安全问题 → 阻塞合并<br>
+                   🚫 超出 OpenSpec 范围 → 停止并标记<br>
+                   🚫 关键功能无测试 → 阻塞<br>
+                   🚫 "先合再说" → 有 CRITICAL 就不行</p>
+            </div>
+        </div>
+        <div class="terminal reveal">
+<span class="comment"># Review 报告格式</span>
+┌──────────┬──────────────────────────────┬──────────┐
+│ Severity │ Issue                        │ Action   │
+├──────────┼──────────────────────────────┼──────────┤
+│ CRITICAL │ (none)                       │ —        │
+│ HIGH     │ (none)                       │ —        │
+│ MEDIUM   │ G6 bundle 1.4MB              │ 后续优化 │
+│ LOW      │ No explicit "no results" msg │ Polish   │
+└──────────┴──────────────────────────────┴──────────┘
+<span style="color:var(--accent-cyan);font-weight:600;">Verdict: APPROVED</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 17: /TEAM-ARCHIVE & RETRO
+     =========================================== -->
+<section class="slide" data-title="Archive & Retro">
+    <div class="slide-number"><span>17</span> / 24</div>
+    <div class="slide-content">
+        <div style="display:flex;gap:clamp(6px,1vw,12px);margin-bottom:var(--element-gap);" class="reveal">
+            <span class="badge badge-cyan">Step 7</span>
+            <span class="badge badge-neon">Step 8</span>
+        </div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">Archive + Retro — 归档与复盘进化</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="reveal">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-cyan);">/team-archive</h3>
+                <div class="terminal" style="font-size:clamp(0.55rem,0.7vw,0.65rem);">
+<span class="cmd">openspec archive init-lineage-viz-mvp</span>
+<span class="output">Merging spec deltas into long-lived specs...</span>
+<span class="output">Moving artifacts to archive/</span>
+<span style="color:var(--accent-cyan);">✅ Archive Complete</span>
+
+<span class="comment"># Spec 累积效应</span>
+specs/
+├── yaml-lineage-config/spec.md  <span class="comment"># +4 requirements</span>
+├── table-lineage-graph/spec.md  <span class="comment"># +3 requirements</span>
+├── dag-visualization/spec.md    <span class="comment"># +4 requirements</span>
+└── wails-project-scaffold/spec.md
+                </div>
+            </div>
+            <div class="reveal-left">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-neon);">/team-retro</h3>
+                <div class="info-card neon" style="margin-bottom:var(--element-gap);">
+                    <h4>Bad Case 格式</h4>
+                    <p>触发条件 → 错误行为 → 期望行为 → 根因 → 规则修复</p>
+                </div>
+                <div class="info-card blue">
+                    <h4>自进化闭环</h4>
+                    <p>Bad Case → /team-retro 分析 → 更新 Guard Skill 规则 → 下次不再犯</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 18: COMPARISON
+     =========================================== -->
+<section class="slide" data-title="对比">
+    <div class="slide-number"><span>18</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">个人 Prompt vs 团队流水线</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="two-col">
+            <div class="compare-col bad reveal">
+                <h3 style="color:#ef4444;">个人 Prompt 模式</h3>
+                <ul>
+                    <li>没有需求分析，直接写代码</li>
+                    <li>AI 想到什么写什么</li>
+                    <li>没有测试或测试后补</li>
+                    <li>质量全靠运气</li>
+                    <li>无规格文档，无法复现</li>
+                    <li>范围不断扩大（scope creep）</li>
+                    <li>安全漏洞被忽略</li>
+                    <li>同样的错误反复犯</li>
+                </ul>
+            </div>
+            <div class="compare-col good reveal-left">
+                <h3 style="color:var(--accent-cyan);">Team Vibecoding 流水线</h3>
+                <ul>
+                    <li>/team-explore 先分析需求</li>
+                    <li>/team-propose 写 OpenSpec 规格</li>
+                    <li>/team-plan 审查任务和依赖</li>
+                    <li>/team-apply TDD 严格实现</li>
+                    <li>/team-verify 四层证据验证</li>
+                    <li>/team-review 安全 + 质量门禁</li>
+                    <li>/team-archive Spec 持续积累</li>
+                    <li>/team-retro 自进化规则库</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 19: GUARD SKILLS
+     =========================================== -->
+<section class="slide" data-title="Guard Skills">
+    <div class="slide-number"><span>19</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">核心机制 — Guard Skills 质量门禁</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <p class="reveal" style="margin-bottom:var(--content-gap);">
+            每个步骤都有对应的 Guard Skill，定义了<strong style="color:var(--accent-orange);">必须做</strong>和<strong style="color:var(--accent-orange);">禁止做</strong>的规则。
+            Guard Skill 不提供建议——它提供<strong style="color:var(--accent-neon);">约束</strong>。
+        </p>
+        <div class="card-grid cols-3 reveal-scale">
+            <div class="info-card blue">
+                <h4>openspec-guard</h4>
+                <p>需求必须用 SHALL/MUST<br>硬阻塞问题阻止继续<br>范围蔓延被拒绝</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>planning-guard</h4>
+                <p>任务 ≤ 1h<br>必须有验证方法<br>依赖关系无环</p>
+            </div>
+            <div class="info-card neon">
+                <h4>implementation-guard</h4>
+                <p>TDD 先测试后实现<br>一次一个任务<br>禁止顺手重构</p>
+            </div>
+            <div class="info-card orange">
+                <h4>verification-guard</h4>
+                <p>4 层验证全通过<br>命令实际执行（非推断）<br>跳过必须说明原因</p>
+            </div>
+            <div class="info-card pink">
+                <h4>review-guard</h4>
+                <p>CRITICAL 问题阻塞<br>超出范围停止<br>关键功能必须有测试</p>
+            </div>
+            <div class="info-card blue">
+                <h4>skill-maintainer</h4>
+                <p>Bad Case → 规则更新<br>系统级问题暂停使用<br>持续进化规则库</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 20: SELF-EVOLVING
+     =========================================== -->
+<section class="slide" data-title="自进化">
+    <div class="slide-number"><span>20</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">自进化系统 — Bad Case 反馈闭环</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="pipeline reveal" style="margin-bottom:var(--content-gap);">
+            <span class="step step-active">Bad Case 发生</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">/team-retro 分析</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">规则修复</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">Skill 更新</span>
+            <span class="arrow">→</span>
+            <span class="step step-active">下次不再犯</span>
+        </div>
+        <div class="two-col">
+            <div class="convo reveal">
+                <div class="section-label">Bad Case 示例</div>
+                <br>
+                <div class="ai-msg"><strong style="color:var(--accent-orange);">触发：</strong>用户说"跳过测试直接实现"</div>
+                <div class="ai-msg"><strong style="color:#ef4444;">错误行为：</strong>AI 跳过测试，直接写实现代码</div>
+                <div class="ai-msg"><strong style="color:var(--accent-cyan);">期望行为：</strong>AI 必须拒绝，解释这是 TDD 流程</div>
+                <br>
+                <div class="ai-msg"><strong style="color:var(--accent-neon);">规则修复：</strong>在 implementation-guard 中添加 IF-THIS-THEN-THEN 表格</div>
+                <div class="ai-msg" style="font-family:var(--font-mono);font-size:var(--code-size);color:var(--text-muted);">
+                    IF user says "skip testing" →<br>
+                    THEN REFUSE + explain TDD requirement
+                </div>
+            </div>
+            <div class="reveal-left">
+                <h3 style="margin-bottom:var(--element-gap);color:var(--accent-neon);">IF-THIS-THEN-THAT 防护网</h3>
+                <div class="info-card neon" style="margin-bottom:var(--element-gap);">
+                    <h4>抗社会工程</h4>
+                    <p>每个 Guard Skill 包含常见"绕过"话术的应对规则。无论用户怎么催促、诱导，AI 都必须遵循流程。</p>
+                </div>
+                <div class="info-card cyan">
+                    <h4>持续硬化</h4>
+                    <p>每次 Bad Case 都变成新规则。系统随着使用时间推移越来越强，错误越来越少。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 21: DELIVERABLES
+     =========================================== -->
+<section class="slide" data-title="交付成果">
+    <div class="slide-number"><span>21</span> / 24</div>
+    <div class="slide-content">
+        <div class="badge badge-cyan reveal" style="margin-bottom:var(--element-gap);">实战成果</div>
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">Lineage Viz MVP — 最终交付</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-4 reveal-scale" style="margin-bottom:var(--content-gap);">
+            <div class="info-card cyan">
+                <h4>Go 测试</h4>
+                <p style="color:var(--accent-cyan);font-weight:700;font-size:var(--h3-size);">23/23</p>
+                <p>全部通过</p>
+            </div>
+            <div class="info-card neon">
+                <h4>任务完成</h4>
+                <p style="color:var(--accent-neon);font-weight:700;font-size:var(--h3-size);">17/17</p>
+                <p>含证据记录</p>
+            </div>
+            <div class="info-card orange">
+                <h4>规格需求</h4>
+                <p style="color:var(--accent-orange);font-weight:700;font-size:var(--h3-size);">14 AC</p>
+                <p>全部映射验证</p>
+            </div>
+            <div class="info-card blue">
+                <h4>交付物</h4>
+                <p style="color:#60a5fa;font-weight:700;font-size:var(--h3-size);">14.3MB</p>
+                <p>Windows 桌面应用</p>
+            </div>
+        </div>
+        <div class="terminal reveal">
+<span class="comment"># 功能清单</span>
+✅ YAML 配置加载 → 解析血缘关系
+✅ DAG 可视化 → Dagre 层次布局
+✅ 缩放/平移 → 鼠标滚轮 + 拖拽
+✅ 节点搜索 → 高亮匹配 + 暗化其他
+✅ 点击详情 → 名称/描述/字段/上下游
+✅ 循环检测 → 错误提示含路径
+✅ 独立 EXE → 无需开发环境
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 22: HOW TO USE
+     =========================================== -->
+<section class="slide" data-title="如何使用">
+    <div class="slide-number"><span>22</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">如何使用 Team Vibecoding</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="terminal reveal" style="margin-bottom:var(--content-gap);">
+<span class="comment"># 1. 安装到你的项目</span>
+<span class="prompt">$ </span><span class="cmd">npx team-vibecoding /path/to/my-project</span>
+<span class="output">✓ commands/ → 8 workflow commands</span>
+<span class="output">✓ skills/   → 7 guard skills</span>
+<span class="output">✓ rules/    → team-ai-delivery.mdc</span>
+
+<span class="comment"># 2. 初始化 OpenSpec</span>
+<span class="prompt">$ </span><span class="cmd">openspec init</span>
+
+<span class="comment"># 3. 开始工作流</span>
+<span class="prompt">&gt; </span><span class="cmd">/team-explore</span> <span class="output">我想做一个...</span>
+<span class="output">... AI 进行需求分析，输出方案对比</span>
+<span class="prompt">&gt; </span><span class="cmd">/team-propose</span>
+<span class="output">... 创建 OpenSpec 变更提案</span>
+<span class="prompt">&gt; </span><span class="cmd">/team-apply</span> <span class="highlight">change-id</span>
+<span class="output">... TDD 增量实现</span>
+        </div>
+        <div class="card-grid cols-3 reveal-scale">
+            <div class="info-card blue">
+                <h4>前置条件</h4>
+                <p>OpenCode CLI + OpenSpec + Node.js ≥ 16</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>可选步骤</h4>
+                <p>explore、plan、review、retro 可根据项目复杂度跳过</p>
+            </div>
+            <div class="info-card neon">
+                <h4>必须步骤</h4>
+                <p>propose → apply → verify → archive 不可跳过</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 23: KEY TAKEAWAYS
+     =========================================== -->
+<section class="slide" data-title="核心要点">
+    <div class="slide-number"><span>23</span> / 24</div>
+    <div class="slide-content">
+        <h2 class="reveal" style="margin-bottom:var(--element-gap);">核心要点</h2>
+        <div class="accent-line reveal" style="margin-bottom:var(--content-gap);"></div>
+        <div class="card-grid cols-2 reveal-scale" style="margin-bottom:var(--content-gap);">
+            <div class="info-card neon">
+                <h4>1. Spec-First</h4>
+                <p>先写规格（SHALL/MUST + WHEN/THEN），再写代码。规格是团队间的合约。</p>
+            </div>
+            <div class="info-card cyan">
+                <h4>2. Evidence-Based</h4>
+                <p>"通过"需要证据——实际运行的命令输出，而非推断。没有证据 = 没有完成。</p>
+            </div>
+            <div class="info-card orange">
+                <h4>3. Guard Skills 防护栏</h4>
+                <p>AI 的"自由"是受约束的。每步都有规则告诉它必须做什么、禁止做什么。</p>
+            </div>
+            <div class="info-card pink">
+                <h4>4. Self-Evolving</h4>
+                <p>Bad Case 变成新规则。系统随着使用越来越强，错误越来越少。</p>
+            </div>
+        </div>
+        <div style="padding:clamp(0.6rem,1.5vw,1.2rem);background:linear-gradient(135deg,rgba(37,99,235,0.1),rgba(6,214,160,0.1));border-radius:12px;border:1px solid rgba(37,99,235,0.2);" class="reveal">
+            <p style="font-size:var(--body-size);color:var(--text-primary);text-align:center;">
+                AI 不是替代工程师，而是<strong style="color:var(--accent-cyan);">在结构化流程中放大工程师的能力</strong>。<br>
+                流程纪律 + AI 能力 = 可预测的高质量交付。
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+     SLIDE 24: Q&A
+     =========================================== -->
+<section class="slide title-slide" data-title="Q&A" style="background:radial-gradient(ellipse at 50% 50%, rgba(37,99,235,0.12) 0%, transparent 60%), var(--bg-primary);">
+    <div class="slide-content" style="text-align:center;">
+        <div class="reveal" style="margin-bottom:var(--element-gap);">
+            <span class="badge badge-blue">Team Vibecoding</span>
+        </div>
+        <h1 class="reveal" style="margin-bottom:var(--content-gap);">Q & A</h1>
+        <p class="reveal" style="font-size:var(--h3-size);color:var(--text-secondary);margin-bottom:var(--content-gap);">
+            谢谢！欢迎提问和讨论
+        </p>
+        <div class="reveal" style="display:flex;gap:clamp(6px,1vw,12px);justify-content:center;flex-wrap:wrap;">
+            <span class="badge badge-cyan">npx team-vibecoding</span>
+            <span class="badge badge-neon">github.com/sstmpl/team-vibecoding</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   =========================================== -->
+<script>
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.isScrolling = false;
+
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupWheelNav();
+        this.setupTouchNav();
+        this.setupProgressBar();
+        this.setupNavDots();
+    }
+
+    setupIntersectionObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const idx = Array.from(this.slides).indexOf(entry.target);
+                    if (idx !== -1) {
+                        this.currentSlide = idx;
+                        this.updateProgress();
+                        this.updateNavDots();
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        this.slides.forEach(slide => observer.observe(slide));
+    }
+
+    goToSlide(index) {
+        if (index >= 0 && index < this.slides.length) {
+            this.slides[index].scrollIntoView({ behavior: 'smooth' });
+            this.currentSlide = index;
+        }
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowDown':
+                case 'ArrowRight':
+                case ' ':
+                case 'PageDown':
+                    e.preventDefault();
+                    this.goToSlide(this.currentSlide + 1);
+                    break;
+                case 'ArrowUp':
+                case 'ArrowLeft':
+                case 'PageUp':
+                    e.preventDefault();
+                    this.goToSlide(this.currentSlide - 1);
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    this.goToSlide(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    this.goToSlide(this.slides.length - 1);
+                    break;
+            }
+        });
+    }
+
+    setupWheelNav() {
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            if (this.isScrolling) return;
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (Math.abs(e.deltaY) > 30) {
+                    this.isScrolling = true;
+                    if (e.deltaY > 0) {
+                        this.goToSlide(this.currentSlide + 1);
+                    } else {
+                        this.goToSlide(this.currentSlide - 1);
+                    }
+                    setTimeout(() => { this.isScrolling = false; }, 800);
+                }
+            }, 50);
+        }, { passive: true });
+    }
+
+    setupTouchNav() {
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartY - e.changedTouches[0].clientY;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) this.goToSlide(this.currentSlide + 1);
+                else this.goToSlide(this.currentSlide - 1);
+            }
+        }, { passive: true });
+    }
+
+    setupProgressBar() {
+        this.progressBar = document.getElementById('progressBar');
+        this.updateProgress();
+    }
+
+    updateProgress() {
+        if (this.progressBar) {
+            const pct = ((this.currentSlide + 1) / this.slides.length) * 100;
+            this.progressBar.style.width = pct + '%';
+        }
+    }
+
+    setupNavDots() {
+        this.navDotsContainer = document.getElementById('navDots');
+        this.navDotsContainer.innerHTML = '';
+        this.slides.forEach((slide, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'nav-dot';
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}: ${slide.dataset.title || ''}`);
+            dot.addEventListener('click', () => this.goToSlide(i));
+            this.navDotsContainer.appendChild(dot);
+        });
+        this.navDots = document.querySelectorAll('.nav-dot');
+        this.updateNavDots();
+    }
+
+    updateNavDots() {
+        if (!this.navDots) return;
+        this.navDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === this.currentSlide);
+        });
+    }
+}
+
+new SlidePresentation();
+</script>
+</body>
+</html>
