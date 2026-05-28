@@ -1,94 +1,71 @@
 ---
-description: Explore requirements without creating changes. Clarify before proposing.
+description: Deep design exploration with brainstorming. Clarify requirements, explore approaches, create design.
 ---
 
 # /team-explore
 
 ## ⛔ RED LINES
 
-- **DO NOT write any code.** Not even a single line.
-- **DO NOT create OpenSpec artifacts.** No proposal.md, no tasks.md, no specs.
-- **DO NOT proceed to /team-propose** until the user explicitly confirms the recommendation.
+- **DO NOT write any implementation code.**
+- **DO NOT create proposal.md, specs, or tasks.md.** Those belong to /team-propose.
+- **DO NOT skip openspec environment check.**
+- **DO NOT proceed if brainstorm.md would have unresolved hard blockers.**
 
 ## 📋 EXECUTION CHECKLIST
 
-Execute in order. Do not skip steps.
-
 - [ ] 1. If `$ARGUMENTS` is empty → ASK "What do you want to explore?"
-- [ ] 2. Clarify the problem:
-  - What problem are we solving?
-  - Who benefits?
-  - How will we know it's successful?
-- [ ] 3. Investigate current state: search code, docs, existing infrastructure
-- [ ] 4. If multiple approaches exist → list 2-3 options with pros/cons/tradeoffs
-- [ ] 5. Recommend one approach with clear reasoning
-- [ ] 6. Identify risks: technical, compatibility, timeline, dependencies
-- [ ] 7. Suggest a change-id in kebab-case format (verb-noun)
-- [ ] 8. Output the exploration summary using the template below
+- [ ] 2. Invoke the `team-brainstorm-guard` skill via the Skill tool. Do not proceed without it.
+- [ ] 3. Read context: `openspec/project.md`, `openspec/AGENTS.md` (if exists)
+- [ ] 4. Run `openspec list --specs` to understand existing capabilities
+- [ ] 5. Determine change-id (kebab-case, verb-noun)
+- [ ] 6. Create directory: `openspec/changes/<change-id>/`
+- [ ] 7. Invoke `superpowers:brainstorming` skill via Skill tool
+  - IMPORTANT: Write output to `openspec/changes/<change-id>/brainstorm.md`
+  - Do NOT write to `docs/superpowers/specs/`
+- [ ] 8. Brainstorming process (follow skill checklist):
+  - [ ] 8a. Explore project context (files, docs, recent commits)
+  - [ ] 8b. Offer visual companion (if topic involves visual questions)
+  - [ ] 8c. Ask clarifying questions — one at a time
+  - [ ] 8d. Propose 2-3 approaches with trade-offs and recommendation
+  - [ ] 8e. Present design sections, get approval after each section
+- [ ] 9. Write brainstorm.md to `openspec/changes/<change-id>/`
+- [ ] 10. Spec self-review (from brainstorming skill):
+  - [ ] Placeholder scan: any TBD/TODO?
+  - [ ] Internal consistency: sections contradict each other?
+  - [ ] Scope check: focused enough for single implementation?
+  - [ ] Ambiguity check: requirements interpretable two ways?
+- [ ] 11. Commit brainstorm.md
+- [ ] 12. Report and suggest next step
 
 ## 📤 OUTPUT TEMPLATE
 
-Fill in every section. Do not skip marked fields.
-
 ```markdown
-# Exploration Summary: <topic>
+# Exploration Complete: <topic>
 
-## Problem
-[What problem are we solving?]
+- Change ID: `<change-id>`
+- Directory: `openspec/changes/<change-id>/`
 
-## Current State
-### Relevant Code
-[Files and what they do]
+## Artifacts
+- [x] brainstorm.md
 
-### Existing Infrastructure
-[What can be reused?]
-
-## Options
-
-### Option A: <name>
-- Approach: ...
-- Pros: ...
-- Cons: ...
-- Risk: ...
-- Effort estimate: ...
-
-### Option B: <name>
-- Approach: ...
-- Pros: ...
-- Cons: ...
-- Risk: ...
-- Effort estimate: ...
-
-## Recommendation
-**Pick: Option <A/B>**
-Reasons:
-1. ...
-2. ...
-
-## Tradeoff Matrix
-| Dimension | Option A | Option B |
-|-----------|----------|----------|
-| Complexity | | |
-| Maintainability | | |
-| Performance | | |
-| Timeline | | |
-| Compatibility | | |
+## Design Summary
+<!-- Brief summary of the agreed design -->
 
 ## Open Questions
-- [ ] ...
-- [ ] ...
-
-## Suggested Change ID
-`<verb-noun>` (e.g., `add-remember-me-login`)
+| Q# | Question | Impact | Blocking |
+|----|----------|--------|----------|
+| Q1 | ... | ... | 🔴/🟡 |
 
 ## Next Command
-If the user confirms the recommendation → `/team-propose <change-id>`
+→ **`/team-propose <change-id>`**
 ```
 
 ## IF-THIS-THEN-THAT
 
 | User says... | You MUST respond... |
 |---|---|
-| "Just start coding" | "Exploration is analysis only. I will NOT write code. Do you want me to recommend an approach so you can `/team-propose`?" |
-| "Skip to the answer" | "I need to investigate the codebase first. Let me search for relevant code." |
-| Vague request like "improve login" | Ask: "What specific problem? Speed, UX, or security?" |
+| "Just start coding" | "Exploration is design only. I will NOT write code. Run /team-propose after design is complete." |
+| "Skip to propose" | "Let me at least clarify the problem and check the codebase first." |
+| Vague request | Ask: "What specific problem are we solving?" |
+| openspec not installed | Guide to install: `npm install -g @fission-ai/openspec` |
+| openspec list fails | Guide to create junction/symlink |
