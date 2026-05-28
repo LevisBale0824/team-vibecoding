@@ -18,6 +18,18 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 ## 📋 EXECUTION CHECKLIST
 
 - [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK
+- [ ] 1.1. Check if worktree exists for this change-id:
+  - Run: `git worktree list | grep <change-id>`
+  - If exists → `cd .worktrees/<change-id>` and continue to step 2
+- [ ] 1.2. Check if currently in a worktree:
+  - Run: `GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P) && GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P) && [ "$GIT_DIR" != "$GIT_COMMON" ] && echo "in-worktree" || echo "not-in-worktree"`
+  - If in-worktree (different change) → ASK: "当前在其他 worktree 中，要切换到 <change-id> 的 worktree 吗？"
+    - Yes → switch to .worktrees/<change-id>
+    - No → STOP. 提示先完成当前工作。
+- [ ] 1.3. Create worktree:
+  - Check .worktrees/ in .gitignore: `git check-ignore -q .worktrees 2>/dev/null || echo ".worktrees/" >> .gitignore && git add .gitignore && git commit -m "chore: 添加 .worktrees/ 到 .gitignore"`
+  - Create: `git worktree add .worktrees/<change-id> -b <change-id>`
+  - Change directory: `cd .worktrees/<change-id>`
 - [ ] 2. Read: proposal.md, design.md (if exists), tasks.md, all spec deltas
 - [ ] 3. Invoke `superpowers:test-driven-development` skill via Skill tool
 - [ ] 4. Parse tasks.md → build dependency graph
@@ -68,6 +80,10 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 | No missing requirements | ✅/❌ | ... |
 | Design followed | ✅/❌ | ... |
 
+## Worktree
+- Path: `.worktrees/<change-id>/`
+- Branch: `<change-id>`
+
 ## Next Command
 → **`/team-verify <change-id>`**
 ```
@@ -83,3 +99,5 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 | Test fails unexpectedly | "Test failed at [location]. Let me investigate the root cause before making code changes." |
 | "Use subagent mode" | "Switching to subagent mode. Each task will be dispatched to a fresh subagent." |
 | "Use parallel mode" | "Switching to parallel mode. Independent tasks will run in parallel." |
+| "I'm already in a worktree" | "检测到你在其他 worktree 中。要切换到 <change-id> 的 worktree 吗？" |
+| "Don't use worktree" | "Worktree 提供隔离环境，避免不同 change 之间的干扰。建议使用。" |
