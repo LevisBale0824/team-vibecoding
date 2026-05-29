@@ -9,10 +9,10 @@ const { install } = require('../lib/install');
 const args = process.argv.slice(2);
 
 const HELP = `
-team-vibecoding — Install Team AI collaboration superpowers into your project.
+team-speccoding — Install Team AI collaboration superpowers into your project.
 
 USAGE
-  npx team-vibecoding [<project>] [options]
+  npx team-speccoding [<project>] [options]
 
 ARGUMENTS
   <project>              Target project root directory.
@@ -29,19 +29,19 @@ OPTIONS
 
 EXAMPLES
   # Default: install to project/.opencode/
-  npx team-vibecoding ~/my-project
+  npx team-speccoding ~/my-project
 
   # Custom target directory
-  npx team-vibecoding ~/my-project --target .zero
+  npx team-speccoding ~/my-project --target .zero
 
   # Custom subdirectory names (relative to target)
-  npx team-vibecoding ~/my-project --target .zero --commands-dir workflows
+  npx team-speccoding ~/my-project --target .zero --commands-dir workflows
 
   # Global install (absolute paths, no project root needed)
-  npx team-vibecoding --commands ~/.zerorules/workflows --skills ~/.zeroagent/skills
+  npx team-speccoding --commands ~/.zerorules/workflows --skills ~/.zeroagent/skills
 
   # Preview before installing
-  npx team-vibecoding ~/my-project --dry-run
+  npx team-speccoding ~/my-project --dry-run
 `.trim();
 
 function parseArgs(argv) {

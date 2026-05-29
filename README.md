@@ -1,4 +1,4 @@
-# Team Vibecoding
+# Team Speccoding
 
 OpenCode Team AI collaboration superpowers — commands, skills, and rules for structured development workflow with OpenSpec.
 
@@ -12,25 +12,25 @@ OpenCode Team AI collaboration superpowers — commands, skills, and rules for s
 
 ```bash
 # Default: install to project/.opencode/
-npx team-vibecoding /path/to/my-project
+npx team-speccoding /path/to/my-project
 
 # Custom target directory
-npx team-vibecoding /path/to/my-project --target .zero
+npx team-speccoding /path/to/my-project --target .zero
 
 # Global install (anywhere on disk)
-npx team-vibecoding --commands ~/.zerorules/workflows --skills ~/.zeroagent/skills --rules ~/.zerorules
+npx team-speccoding --commands ~/.zerorules/workflows --skills ~/.zeroagent/skills --rules ~/.zerorules
 
 # Preview before installing
-npx team-vibecoding /path/to/my-project --dry-run
+npx team-speccoding /path/to/my-project --dry-run
 
 # Overwrite existing files
-npx team-vibecoding /path/to/my-project --force
+npx team-speccoding /path/to/my-project --force
 ```
 
 ## Usage
 
 ```
-npx team-vibecoding [<project>] [options]
+npx team-speccoding [<project>] [options]
 
 Options:
   -t, --target <name>    Base directory under <project> (default: ".opencode")
