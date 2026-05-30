@@ -1,5 +1,5 @@
 ---
-name: team-apply
+name: team-apply-guard
 description: Use when implementing an approved OpenSpec change, progressing through tasks, updating task status, or continuing an incomplete implementation.
 ---
 
