@@ -21,14 +21,26 @@ These are non-negotiable. You MUST comply.
 - [ ] 1. Run `openspec --version` — if command not found → STOP. Tell user: "OpenSpec CLI is not installed. Run `npm install -g @fission-ai/openspec` first, then verify with `openspec --version`."
 - [ ] 2. If `$ARGUMENTS` is empty → ASK "What change do you want to propose?"
 - [ ] 3. Run `openspec list` — if it fails → STOP (see RED LINE #6). This validates the junction/symlink and init were done.
-- [ ] 3. Read context: `openspec/project.md`, `openspec/AGENTS.md` (if exists)
+- [ ] 3.1. Read context: `openspec/project.md`, `openspec/AGENTS.md` (if exists)
+- [ ] 3.2. Check for existing brainstorm.md: `openspec/changes/<change-id>/brainstorm.md`
+  - If exists → Read brainstorm.md as context for proposal generation
+  - If not exists → Continue without it (user may have skipped /team-explore)
 - [ ] 4. Run `openspec list --specs`
 - [ ] 5. Determine change-id in kebab-case (verb-noun, e.g., `add-user-auth`)
 - [ ] 6. Create directory: `openspec/changes/<change-id>/`
-- [ ] 7. Generate artifacts using EXACTLY the formats below
-- [ ] 8. Run `openspec validate <change-id> --strict`
-- [ ] 9. If validation fails → FIX first, then re-validate
-- [ ] 10. Report and STOP for human review
+- [ ] 7. Generate proposal.md using EXACTLY the format below
+- [ ] 8. Generate spec deltas using EXACTLY the format below
+- [ ] 9. Generate design.md (if needed) using EXACTLY the format below
+- [ ] 10. Invoke `superpowers:writing-plans` skill via Skill tool
+  - Write output to `openspec/changes/<change-id>/plan.md`
+  - Do NOT write to `docs/superpowers/plans/`
+- [ ] 11. Extract tasks.md from plan.md:
+  - Each `### Task N: <name>` → `## N. <name>`
+  - Each `- [ ] Step N: <description>` → `- [ ] N.M <description>`
+  - Write to `openspec/changes/<change-id>/tasks.md`
+- [ ] 12. Run `openspec validate <change-id> --strict`
+- [ ] 13. If validation fails → FIX first, then re-validate
+- [ ] 14. Report and STOP for human review
 
 ## 📐 FORMAT REQUIREMENTS — DEVIATION = VALIDATION FAILURE
 
@@ -77,15 +89,35 @@ These are non-negotiable. You MUST comply.
 - Scenario body: `- **WHEN**` / `- **THEN**` / `- **AND**`
 - Every ADDED/MODIFIED requirement MUST have at least one scenario
 
-### tasks.md format:
+### design.md format (when needed):
 
 ```markdown
-## 1. <Task Group Name>
-- [ ] 1.1 <Task description>
-- [ ] 1.2 <Task description>
+# Design: <change-id>
 
-## 2. <Task Group Name>
-- [ ] 2.1 <Task description>
+## Context
+<!-- Background, current state, constraints, stakeholders -->
+
+## Goals / Non-Goals
+**Goals:** ...
+**Non-Goals:** ...
+
+## Decisions
+### Decision 1: [Title]
+- Background: [why needed]
+- Alternatives considered: [options]
+- Choice: [what was chosen]
+- Rationale: [why]
+
+## Risks / Trade-offs
+| Risk | Mitigation |
+|------|------------|
+| ... | ... |
+
+## Migration Plan
+<!-- Steps to deploy, rollback strategy -->
+
+## Open Questions
+<!-- Outstanding decisions or unknowns -->
 ```
 
 ## 📤 OUTPUT TEMPLATE
@@ -99,7 +131,8 @@ These are non-negotiable. You MUST comply.
 ## Artifacts
 - [x] proposal.md
 - [x] design.md (or reason why not needed)
-- [x] tasks.md
+- [x] plan.md (via superpowers:writing-plans)
+- [x] tasks.md (extracted from plan.md)
 - [x] specs/<capability>/spec.md
 
 ## Validation
@@ -124,3 +157,10 @@ Human review required. After approval:
 | Skill not loaded | Invoke `team-openspec-guard` skill via Skill tool before any action. |
 | `openspec list` fails | "OpenSpec is not accessible from the project root. Run `openspec init --tools none docs` first, then create the junction/symlink: `mklink /J openspec docs\\openspec` (Windows) or `ln -s docs/openspec openspec` (Unix)." |
 | "Add feature X too" (scope creep) | "That is out of scope. Let's finish this proposal first. You can create a separate change for X." |
+```
+
+**Status reporting:**
+- Report DONE when complete
+- Report DONE_WITH_CONCERNS if you have doubts
+- Report NEEDS_CONTEXT if you need more information
+- Report BLOCKED if you cannot proceed

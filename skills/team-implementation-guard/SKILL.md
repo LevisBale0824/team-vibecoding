@@ -1,6 +1,6 @@
 ---
 name: team-implementation-guard
-description: Use when implementing planned development tasks, modifying production code, fixing bugs, adding tests, or updating OpenSpec task lists.
+description: Use when implementing OpenSpec tasks, writing code, running tests, or fixing bugs. Guards TDD flow, execution modes, and spec compliance.
 ---
 
 # Team Implementation Guard
@@ -71,6 +71,109 @@ Test-after is acceptable for:
 - After: compare screenshot to confirm change
 - Verification: playwright test tests/e2e/login.spec.ts
 ```
+
+## Execution Modes
+
+Three execution modes available:
+
+### Inline Mode (Default)
+- Execute tasks in current session
+- One task at a time
+- Full TDD flow for each task
+- Immediate feedback loop
+
+### Subagent Mode
+- Dispatch fresh subagent per task
+- Use `superpowers:subagent-driven-development` skill
+- Each subagent gets isolated context
+- Main agent coordinates and reviews
+
+### Parallel Mode
+- Parse dependency graph from tasks.md
+- Dispatch parallel subagents for independent tasks
+- Use `superpowers:dispatching-parallel-agents` skill
+- Respect dependency order
+
+## Dependency Graph
+
+Parse `tasks.md` to build dependency graph:
+
+1. Read all tasks and their `Depends on` fields
+2. Build directed acyclic graph (DAG)
+3. Identify independent tasks (no dependencies)
+4. Execute in topological order
+5. Parallelize independent tasks when possible
+
+## Problem Handling
+
+### Simple Issues (Subagent resolves)
+- Test failures
+- Implementation bugs
+- Missing imports
+- Type errors
+
+### Complex Issues (Report to main agent)
+- Design questions
+- Blocking dependencies
+- Scope changes
+- Architecture decisions
+
+## Worktree Management
+
+When executing tasks, consider using Git worktrees for isolation:
+
+### Detection
+
+Before creating a worktree, check:
+
+1. **Is worktree already exists?**
+   ```bash
+   git worktree list | grep <change-id>
+   ```
+   If exists → switch to it
+
+2. **Are we already in a worktree?**
+   ```bash
+   GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
+   GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+   if [ "$GIT_DIR" != "$GIT_COMMON" ]; then
+     echo "In worktree"
+   fi
+   ```
+   If in different worktree → prompt user to switch
+
+### Creation
+
+To create a worktree:
+
+1. **Check .worktrees/ is in .gitignore**
+   ```bash
+   git check-ignore -q .worktrees 2>/dev/null
+   ```
+   If not ignored → add to .gitignore and commit
+
+2. **Create worktree**
+   ```bash
+   git worktree add .worktrees/<change-id> -b <change-id>
+   ```
+
+3. **Change to worktree directory**
+   ```bash
+   cd .worktrees/<change-id>
+   ```
+
+### Cleanup
+
+Worktrees are cleaned up in `/team-archive`. Do NOT manually delete worktrees.
+
+## Spec Compliance Review (After ALL tasks)
+
+After all tasks complete, perform spec compliance review:
+
+1. **Requirements matched:** Does implementation match requirements?
+2. **No scope creep:** Any extra features not in spec?
+3. **No missing requirements:** Any requirements not implemented?
+4. **Design followed:** Does implementation match design?
 
 ## Evidence Format
 
