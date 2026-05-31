@@ -23,11 +23,11 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
   - If exists → `cd .worktrees/<change-id>` and continue to step 2
 - [ ] 1.2. Check if currently in a worktree:
   - Run: `GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P) && GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P) && [ "$GIT_DIR" != "$GIT_COMMON" ] && echo "in-worktree" || echo "not-in-worktree"`
-  - If in-worktree (different change) → ASK: "当前在其他 worktree 中，要切换到 <change-id> 的 worktree 吗？"
+  - If in-worktree (different change) → ASK: "You are in another worktree. Switch to <change-id>'s worktree?"
     - Yes → switch to .worktrees/<change-id>
-    - No → STOP. 提示先完成当前工作。
+    - No → STOP. Finish current work first.
 - [ ] 1.3. Create worktree:
-  - Check .worktrees/ in .gitignore: `git check-ignore -q .worktrees 2>/dev/null || echo ".worktrees/" >> .gitignore && git add .gitignore && git commit -m "chore: 添加 .worktrees/ 到 .gitignore"`
+  - Check .worktrees/ in .gitignore: `git check-ignore -q .worktrees 2>/dev/null || echo ".worktrees/" >> .gitignore && git add .gitignore && git commit -m "chore: add .worktrees/ to .gitignore"`
   - Create: `git worktree add .worktrees/<change-id> -b <change-id>`
   - Change directory: `cd .worktrees/<change-id>`
 - [ ] 2. Read: proposal.md, design.md (if exists), tasks.md, all spec deltas
@@ -93,12 +93,12 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 | User says... | You MUST respond... |
 |---|---|
 | Skill not loaded | Invoke `team-implementation-guard` skill via Skill tool before any action. |
-| "不用测了 / skip testing" | "I cannot mark work complete without verification. The shortest safe check I can run is: [suggestion]. Should I proceed?" |
+| "Skip testing / don't test" | "I cannot mark work complete without verification. The shortest safe check I can run is: [suggestion]. Should I proceed?" |
 | "Also fix X while you're there" | "X is not in tasks.md. I'll finish the current task first. If X is needed, update the OpenSpec tasks." |
 | "Just mark it done" | "I need evidence. Let me run the verification command first." |
 | Test fails unexpectedly | "Test failed at [location]. Let me investigate the root cause before making code changes." |
 | "Use subagent mode" | "Switching to subagent mode. Each task will be dispatched to a fresh subagent." |
 | "Use parallel mode" | "Switching to parallel mode. Independent tasks will run in parallel." |
-| "I'm already in a worktree" | "检测到你在其他 worktree 中。要切换到 <change-id> 的 worktree 吗？" |
-| "Don't use worktree" | "Worktree 提供隔离环境，避免不同 change 之间的干扰。建议使用。" |
+| "I'm already in a worktree" | "You are in another worktree. Switch to <change-id>'s worktree?" |
+| "Don't use worktree" | "Worktrees provide isolation and prevent cross-change interference. Recommended." |
 | No plan review found | Plan skipped → change is simple. Default to **Inline** mode. Note: "Plan review skipped, using Inline mode." |

@@ -33,7 +33,7 @@ Do NOT use this skill when:
 
 ## Task Loop
 
-The task loop is **autonomous** — after completing one task, immediately proceed to the next. The user has already authorized the full implementation by invoking the apply command. Do NOT pause between tasks asking "开始下一个?" — just report briefly and continue.
+The task loop is **autonomous** — after completing one task, immediately proceed to the next. The user has already authorized the full implementation by invoking the apply command. Do NOT pause between tasks asking "Continue?" — just report briefly and proceed.
 
 For each task:
 
@@ -275,7 +275,7 @@ STOP and ask before continuing when:
 | Mark complete without evidence | Run verification command and record result |
 | Implement something not in tasks.md | Stop, suggest updating OpenSpec |
 | Skip testing when user says "don't test" | Refuse, provide shortest safe verification path |
-| **Pause between tasks to ask "继续?"** | Task loop is autonomous — just report and continue to next task |
+| **Pause between tasks to ask "Continue?"** | Task loop is autonomous — just report and continue to next task |
 
 ## Bad Cases
 

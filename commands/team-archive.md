@@ -27,8 +27,8 @@ description: Archive a completed change after verification passes.
   - If not exists → skip to step 14
 - [ ] 11. Check for uncommitted changes in worktree:
   - Run: `cd .worktrees/<change-id> && git status --porcelain`
-  - If has changes → STOP. 提示: "Worktree 中有未提交的更改。请先提交或 stash 更改，然后再运行 /team-archive。"
-- [ ] 12. ASK user: "Worktree .worktrees/<change-id>/ 仍然存在。要删除吗？"
+  - If has changes → STOP. Warn: "Worktree has uncommitted changes. Please commit or stash them before running /team-archive."
+- [ ] 12. ASK user: "Worktree .worktrees/<change-id>/ still exists. Delete it?"
   - Yes → continue to step 13
   - No → skip to step 14
 - [ ] 13. Delete worktree:
@@ -87,5 +87,5 @@ Do you still want to archive? (yes/no)
 | "Move the files manually" | "I must use `openspec archive` to ensure specs are properly synced. Let me run the command." |
 | "Ignore the validation error" | "I cannot archive with validation errors. Let me check what's wrong first." |
 | Archive fails | Show the error output. Suggest: "Check if the change is still active. Run `openspec list` to verify." |
-| "Keep the worktree" | "OK, worktree .worktrees/<change-id>/ 将保留。你可以稍后手动删除：git worktree remove .worktrees/<change-id>" |
-| "Worktree has uncommitted changes" | "Worktree 中有未提交的更改。请先提交或 stash 更改，然后再运行 /team-archive。" |
+| "Keep the worktree" | "OK, worktree .worktrees/<change-id>/ will be kept. Remove manually later: git worktree remove .worktrees/<change-id>" |
+| "Worktree has uncommitted changes" | "Worktree has uncommitted changes. Please commit or stash them before running /team-archive." |
