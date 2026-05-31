@@ -33,10 +33,10 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 - [ ] 2. Read: proposal.md, design.md (if exists), tasks.md, all spec deltas
 - [ ] 3. Invoke `superpowers:test-driven-development` skill via Skill tool
 - [ ] 4. Parse tasks.md → build dependency graph
-- [ ] 5. Auto-detect execution mode from tasks.md:
-  - Analyze task count and dependency graph
-  - Announce: "Using [mode] mode: [reason]"
-  - See `team-implementation-guard` Execution Modes for decision criteria
+- [ ] 5. Read execution mode from plan review (see plan output):
+  - Announce: "Plan recommended [mode]: [reason]. Using [mode]."
+  - If plan not available → fall back to Inline, note "Plan review skipped, defaulting to Inline"
+  - If user overrides mode → honor it and note the override
 - [ ] 6. Execute tasks based on mode:
   - **Inline:** Execute one by one with TDD flow
   - **Subagent:** Dispatch subagent per task (use `superpowers:subagent-driven-development`)
@@ -101,3 +101,4 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 | "Use parallel mode" | "Switching to parallel mode. Independent tasks will run in parallel." |
 | "I'm already in a worktree" | "检测到你在其他 worktree 中。要切换到 <change-id> 的 worktree 吗？" |
 | "Don't use worktree" | "Worktree 提供隔离环境，避免不同 change 之间的干扰。建议使用。" |
+| No plan review found | Plan skipped → change is simple. Default to **Inline** mode. Note: "Plan review skipped, using Inline mode." |

@@ -47,6 +47,22 @@ Do NOT use this skill when:
 - [ ] Each task has a specific verification command or manual scenario
 - [ ] Verification can run independently
 
+## Execution Mode Recommendation
+
+After analyzing the dependency graph, recommend an execution mode:
+
+| Condition | Mode | Why |
+|-----------|------|-----|
+| Total tasks ≤ 3 | **Inline** | Small scope, one context is enough |
+| Tasks > 3, all sequential dependencies | **Subagent** | Isolate context per task, main agent coordinates |
+| Tasks > 3, has independent tasks (no mutual dependencies) | **Parallel** | Independent tasks can run concurrently |
+
+**Parallel safety check** — only recommend Parallel when:
+- Independent tasks do NOT modify the same files
+- Each independent task's verification does NOT depend on other tasks' output
+
+Write the recommendation into the plan review output. `/team-apply` will read and follow it.
+
 ## Dependency Matrix Format
 
 ```markdown

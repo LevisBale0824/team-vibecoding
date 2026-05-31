@@ -77,19 +77,12 @@ Test-after is acceptable for:
 
 ## Execution Modes
 
-At the start of `/team-apply`, analyze `tasks.md` and select the mode:
+The execution mode is recommended by `/team-plan` based on task count and dependency graph (see `team-planning-guard`). At the start of `/team-apply`:
 
-| Condition | Mode | Why |
-|-----------|------|-----|
-| Total tasks ≤ 3 | **Inline** | Small scope, one context is enough |
-| Tasks > 3, all sequential dependencies | **Subagent** | Isolate context per task, main agent coordinates |
-| Tasks > 3, has independent tasks (no mutual dependencies) | **Parallel** | Independent tasks can run concurrently |
-
-**Auto-detection steps:**
-1. Count total tasks in `tasks.md`
-2. Check `Depends on` fields → build dependency graph
-3. Identify independent tasks (no dependencies on each other)
-4. Select mode and announce: "Using [mode] mode: [reason]"
+1. Read the plan review output for the recommended mode
+2. Announce: "Plan recommended [mode]: [reason]. Using [mode]."
+3. If plan not available → default to **Inline** (plan was skipped, change is simple enough)
+4. User may override (e.g., "Use parallel mode") → honor and note the override
 
 ### Inline Mode
 - Execute tasks in current session

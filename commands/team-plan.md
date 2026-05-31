@@ -20,8 +20,9 @@ description: Review and strengthen task breakdown before implementation.
 - [ ] 5. Check verification: every task has a specific command or scenario
 - [ ] 6. Check requirement linkage: every task links to a requirement
 - [ ] 7. Check open questions: all hard blockers resolved?
-- [ ] 8. If tasks need splitting/merging → update tasks.md
-- [ ] 9. Output review summary
+- [ ] 8. Recommend execution mode (Inline/Subagent/Parallel) based on dependency graph
+- [ ] 9. If tasks need splitting/merging → update tasks.md
+- [ ] 10. Output review summary
 
 ## 📤 OUTPUT TEMPLATE
 
@@ -36,6 +37,10 @@ description: Review and strengthen task breakdown before implementation.
 | Dependency order | ✅/❌ | ... |
 | Verification methods | ✅/❌ | ... |
 | Requirement linkage | ✅/❌ | ... |
+
+## Execution Mode
+**Recommended:** [Inline / Subagent / Parallel]
+**Reason:** [e.g., 5 tasks, 2 independent → Parallel]
 
 ## Open Questions Status
 - [x] Resolved: ...
