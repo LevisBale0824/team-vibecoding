@@ -338,10 +338,12 @@ If validation fails, fix artifacts before reporting done. Common failures:
 | Missing design trade-offs | Add `design.md` before implementation |
 | Non-goals not listed | Explicitly state "NOT doing X, Y, Z" |
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what the user said
 - Wrong output: what the AI did that it shouldn't have
 - Expected output: what it should have done
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

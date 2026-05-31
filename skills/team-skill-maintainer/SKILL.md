@@ -1,19 +1,19 @@
 ---
 name: team-skill-maintainer
-description: Use when retrospecting on AI collaboration, recording Bad Cases, updating skill rules, or managing skill versions.
+description: Use when retrospecting on AI collaboration, recording bad cases, updating skill rules, or managing skill versions.
 ---
 
 # Team Skill Maintainer
 
 ## Core Principle
 
-Every AI collaboration failure is an opportunity to improve skills. Bad Cases MUST be recorded and rules fed back.
+Every AI collaboration failure is an opportunity to improve skills. Bad Cases MUST be recorded in the affected skill's `badCases/` directory and rules fed back into SKILL.md.
 
 ## When to Use
 
 Use this skill when:
 - Retrospective analysis in `/team-retro`
-- Recording Bad Cases
+- Recording bad cases
 - Suggesting skill rule updates
 - Managing skill versions
 
@@ -26,15 +26,16 @@ Do NOT use this skill when:
 
 1. **Review change artifacts**: proposal, tasks, verification records
 2. **Analyze collaboration**: which phases went well? which had issues?
-3. **Identify Bad Cases**: AI skipped steps? rules unclear?
-4. **Record Bad Case**: scenario + wrong behavior + expected + rule adjustment
-5. **Suggest updates**: skill rules, command parameters, templates, checklists
+3. **Identify failures**: AI skipped steps? rules unclear?
+4. **Record bad case**: write to affected skill's `badCases/` directory (NOT inline in SKILL.md)
+5. **Update rules**: add new rules to SKILL.md — only rules, not case details
 
 ## Non-Negotiable Rules
 
-- Do NOT hide Bad Cases — even embarrassing ones
-- Do NOT complain without fixing — every Bad Case MUST have a suggested rule adjustment
+- Do NOT hide failures — even embarrassing ones
+- Do NOT complain without fixing — every bad case MUST have a suggested rule adjustment
 - Do NOT repeat the same mistake — update skills after retro
+- Do NOT embed bad cases in SKILL.md — write to `badCases/` directory, keep SKILL.md lean
 
 ## Skill Update Principles
 
@@ -48,72 +49,78 @@ Do NOT use this skill when:
 After each skill update:
 1. Record update date and changes
 2. Reference the update in the retro report
-3. Verify new rules prevent the previous Bad Case
+3. Verify new rules prevent the previous failure
 
 ## Bad Case Format
 
+Write bad cases to the affected skill's `badCases/` directory:
+```
+skills/<skill-name>/badCases/<NNN>-<short-name>.md
+```
+
+File naming: sequential number + short descriptive name (e.g., `001-stop-between-tasks.md`).
+
 ```markdown
-### Bad Case N: <one-line summary>
+# Bad Case NNN: <one-line summary>
 
 - **Date**: ...
 - **Change**: <change-id>
 - **Phase**: propose / plan / apply / verify / review / archive
 
-#### Trigger
+## Trigger
 User said:
 > [exact quote]
 
-#### Wrong Behavior
+## Wrong Behavior
 [What the AI did that it shouldn't have]
 
-#### Expected Behavior
+## Expected Behavior
 [What the AI should have done]
 
-#### Root Cause
+## Root Cause
 [Why the skill failed to prevent this]
 
-#### Suggested Rule Adjustment
+## Rule Changes
 **Affected Skill**: [skill-name]
 
 New/modified rules:
 1. [Specific rule 1]
 2. [Specific rule 2]
-
-#### Verification
-How to verify the rule is effective:
-- [Verification method]
 ```
 
 Example:
-```markdown
-### Bad Case 1: AI was persuaded to skip testing
-
-- **Date**: 2026-01-15
-- **Change**: add-user-auth
-- **Phase**: apply
-
-#### Trigger
-User said:
-> "Don't test, just tell me when done"
-
-#### Wrong Behavior
-AI replied "Done" and marked task complete without running any tests.
-
-#### Expected Behavior
-AI should refuse, explain why verification is needed, provide shortest safe verification path.
-
-#### Root Cause
-`team-implementation-guard` had no explicit rule for handling "user pushes to skip process."
-
-#### Suggested Rule Adjustment
-**Affected Skill**: team-implementation-guard
-
-New rules:
-1. Add to "Risk Signals": user asks to skip verification
-2. Add standard response template for "don't test" type requests
+```
+skills/team-implementation-guard/badCases/001-stop-between-tasks.md
 ```
 
-## Common Bad Case Patterns
+```markdown
+# Bad Case 001: AI Paused Between Tasks Asking for Confirmation
+
+- **Date**: 2026-05-31
+- **Change**: chunked-upload
+- **Phase**: apply
+
+## Trigger
+User invoked `/team-apply`. AI completed Task 1.1 and ended with "开始 Task 1.2?"
+
+## Wrong Behavior
+After each task, AI reported progress then asked "开始 Task X.Y?" instead of continuing.
+
+## Expected Behavior
+AI should immediately proceed to the next task without asking.
+
+## Root Cause
+Task Loop rule said "ONE TASK AT A TIME" but never stated the loop should continue autonomously.
+
+## Rule Changes
+**Affected Skill**: team-implementation-guard
+
+1. Task Loop preamble: "autonomous — immediately proceed to the next"
+2. Task Loop step 8: "Immediately continue — do NOT ask for permission"
+3. Common Mistakes table: added "Pause between tasks" entry
+```
+
+## Common Failure Patterns
 
 | Pattern | Suggested Rule |
 |---------|---------------|
@@ -126,17 +133,20 @@ New rules:
 ## Retro Checklist
 
 - [ ] Reviewed collaboration records from all phases
-- [ ] Identified all Bad Cases (≥ 0)
-- [ ] Each Bad Case has scenario, wrong behavior, expected behavior
-- [ ] Each Bad Case has suggested rule adjustment
+- [ ] Identified all failures (≥ 0)
+- [ ] Each failure has scenario, wrong behavior, expected behavior
+- [ ] Each failure has suggested rule adjustment
+- [ ] Bad case written to affected skill's `badCases/` directory
+- [ ] Only new rules added to SKILL.md (no case details)
 - [ ] Output retro report
-- [ ] Updated related skills
 - [ ] Verified whether test scenarios need updating
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what retro or skill update was requested
-- Wrong output: what the AI did that it shouldn't have (e.g., hid a Bad Case, skipped a rule update)
+- Wrong output: what the AI did that it shouldn't have (e.g., hid a failure, skipped a rule update)
 - Expected output: what it should have done
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

@@ -107,10 +107,12 @@ Do NOT use this skill when:
 | Ignoring security | Focus on auth/authz/input handling |
 | Accepting weak tests | Critical paths MUST have tests |
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what code was reviewed
 - Wrong output: what the AI missed
 - Expected output: what it should have found
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

@@ -33,6 +33,8 @@ Do NOT use this skill when:
 
 ## Task Loop
 
+The task loop is **autonomous** — after completing one task, immediately proceed to the next. The user has already authorized the full implementation by invoking the apply command. Do NOT pause between tasks asking "开始下一个?" — just report briefly and continue.
+
 For each task:
 
 1. **Read** the task and related requirements
@@ -42,6 +44,7 @@ For each task:
 5. **Run** the targeted verification
 6. **Run broader verification** if shared code was changed
 7. **Update** `tasks.md` with `[x]` and verification result
+8. **Immediately continue** to the next unchecked task in tasks.md — do NOT ask the user for permission
 
 ## TDD Rules
 
@@ -74,11 +77,23 @@ Test-after is acceptable for:
 
 ## Execution Modes
 
-Three execution modes available:
+At the start of `/team-apply`, analyze `tasks.md` and select the mode:
 
-### Inline Mode (Default)
+| Condition | Mode | Why |
+|-----------|------|-----|
+| Total tasks ≤ 3 | **Inline** | Small scope, one context is enough |
+| Tasks > 3, all sequential dependencies | **Subagent** | Isolate context per task, main agent coordinates |
+| Tasks > 3, has independent tasks (no mutual dependencies) | **Parallel** | Independent tasks can run concurrently |
+
+**Auto-detection steps:**
+1. Count total tasks in `tasks.md`
+2. Check `Depends on` fields → build dependency graph
+3. Identify independent tasks (no dependencies on each other)
+4. Select mode and announce: "Using [mode] mode: [reason]"
+
+### Inline Mode
 - Execute tasks in current session
-- One task at a time
+- One task at a time, sequential
 - Full TDD flow for each task
 - Immediate feedback loop
 
@@ -267,11 +282,14 @@ STOP and ask before continuing when:
 | Mark complete without evidence | Run verification command and record result |
 | Implement something not in tasks.md | Stop, suggest updating OpenSpec |
 | Skip testing when user says "don't test" | Refuse, provide shortest safe verification path |
+| **Pause between tasks to ask "继续?"** | Task loop is autonomous — just report and continue to next task |
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what the user said
 - Wrong output: what the AI did that it shouldn't have
 - Expected output: what it should have done
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

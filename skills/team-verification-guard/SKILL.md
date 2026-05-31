@@ -132,10 +132,12 @@ Check `tasks.md`:
 | Marking AC passed without evidence | Attach test name or manual steps to each |
 | Hiding skipped checks | List skipped items and reasons explicitly |
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what the user said
 - Wrong output: what the AI did that it shouldn't have
 - Expected output: what it should have done
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

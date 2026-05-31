@@ -138,10 +138,12 @@ STOP and ask before continuing when:
 | Dependencies not marked | Add "Depends on: Task X" in description |
 | Basic tasks skipped | Ensure models, config, dependencies come first |
 
-## Bad Case Recording
+## Bad Cases
 
-When this skill fails, record:
+When this skill fails, record in `badCases/` directory:
 - Input: what the user said
 - Wrong output: what the AI did that it shouldn't have
 - Expected output: what it should have done
 - New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.
