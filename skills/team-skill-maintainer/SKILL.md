@@ -18,7 +18,7 @@ Use this skill when:
 - Managing skill versions
 
 Do NOT use this skill when:
-- Creating new skills from scratch (use the `skill-creator` skill)
+- Creating new skills from scratch (use `superpowers:writing-skills`)
 - Implementing code or fixing bugs (use `team-implementation-guard`)
 - Running a retro on a change that hasn't been archived — archive first with `/team-archive`
 

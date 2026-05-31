@@ -16,13 +16,13 @@ description: Retrospect on AI collaboration and feed bad cases back into skills.
 
 - [ ] 1. If `$ARGUMENTS` is empty → run `openspec list --all` and ASK
 - [ ] 2. Review archived artifacts: proposal.md, tasks.md, verification records
-- [ ] 4. Analyze each phase: propose → plan → apply → verify → review → archive
-- [ ] 5. For each phase, identify: What worked? What went wrong?
-- [ ] 6. Identify failures where AI behavior deviated from skill rules
-- [ ] 7. For each failure: root cause + suggested rule adjustment
-- [ ] 8. Write bad cases to affected skill's `badCases/` directory
-- [ ] 9. Update SKILL.md with new rules only (no case details)
-- [ ] 10. Generate retro report
+- [ ] 3. Analyze each phase: propose → plan → apply → verify → review → archive
+- [ ] 4. For each phase, identify: What worked? What went wrong?
+- [ ] 5. Identify failures where AI behavior deviated from skill rules
+- [ ] 6. For each failure: root cause + suggested rule adjustment
+- [ ] 7. Write bad cases to affected skill's `badCases/` directory
+- [ ] 8. Update SKILL.md with new rules only (no case details)
+- [ ] 9. Generate retro report
 
 ## 📤 OUTPUT TEMPLATE
 
@@ -77,7 +77,7 @@ description: Retrospect on AI collaboration and feed bad cases back into skills.
 ## Action Items
 - [ ] Update [skill-name] SKILL.md
 - [ ] Update [command-name] command file
-- [ ] Add test scenario in TestScenarios.md
+- [ ] Add test scenario if applicable
 
 ## Done
 This change is fully closed: archived AND retrospected. To start a new change, use `/team-explore` or `/team-propose`.

@@ -14,14 +14,14 @@ description: Pre-merge code review for requirements, security, tests, and regres
 ## 📋 EXECUTION CHECKLIST
 
 - [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK
-- [ ] 2. Get change scope: `git diff origin/main...HEAD --stat`
-- [ ] 4. Read OpenSpec artifacts: proposal.md, tasks.md, spec deltas
-- [ ] 5. **Requirement Alignment:** does every change trace to a requirement?
-- [ ] 6. **Security:** auth, input validation, SQL injection, XSS, secrets, sensitive data
-- [ ] 7. **Test Coverage:** new features tested? bug fixes have regression tests?
-- [ ] 8. **Code Quality:** functions >50 lines? nesting >4 deep? hardcoded values? error handling?
-- [ ] 9. **Regression Risk:** shared code changed? breaking API changes? data migration needed?
-- [ ] 10. Output review report with severity-graded issues
+- [ ] 2. Get change scope: `git diff origin/master...HEAD --stat`
+- [ ] 3. Read OpenSpec artifacts: proposal.md, tasks.md, spec deltas
+- [ ] 4. **Requirement Alignment:** does every change trace to a requirement?
+- [ ] 5. **Security:** auth, input validation, SQL injection, XSS, secrets, sensitive data
+- [ ] 6. **Test Coverage:** new features tested? bug fixes have regression tests?
+- [ ] 7. **Code Quality:** functions >50 lines? nesting >4 deep? hardcoded values? error handling?
+- [ ] 8. **Regression Risk:** shared code changed? breaking API changes? data migration needed?
+- [ ] 9. Output review report with severity-graded issues
 
 ## 📤 OUTPUT TEMPLATE
 

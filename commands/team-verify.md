@@ -19,17 +19,17 @@ Execute all 4 layers. Do not skip.
 
 - [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK
 - [ ] 2. Read: proposal.md, tasks.md, design.md, spec deltas
-- [ ] 4. **Layer 1 — OpenSpec Validity:**
+- [ ] 3. **Layer 1 — OpenSpec Validity:**
   - Run `openspec validate <change-id> --strict`
   - If FAIL → STOP. Fix before proceeding.
-- [ ] 5. **Layer 2 — Task Completion:**
+- [ ] 4. **Layer 2 — Task Completion:**
   - Count completed vs total tasks
   - Check each `- [x]` has evidence
   - Check deferred tasks have reasons
-- [ ] 6. **Layer 3 — Project Checks:**
+- [ ] 5. **Layer 3 — Project Checks:**
   - Run lint, unit tests, build, typecheck
   - Record the actual command output
-- [ ] 7. **Layer 4 — Acceptance Criteria:**
+- [ ] 6. **Layer 4 — Acceptance Criteria:**
   - Map every AC to a test or manual evidence
   - Mark each: ✅ / ❌ / ⚠ (missing evidence)
 - [ ] 8. Output verification report using template below

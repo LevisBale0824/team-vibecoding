@@ -43,7 +43,7 @@ See `team-openspec-guard` skill for full format specifications.
 | Step | Can Skip? | Condition |
 |------|-----------|-----------|
 | `/team-explore` | Yes | Problem is already clear, change-id is decided. If used, produces brainstorm.md |
-| `/team-plan` | Yes | Simple change, single file, no dependency concerns |
+| `/team-plan` | Yes | Simple change, single file, no dependency concerns. User explicitly requests skip. |
 | `/team-review` | Yes | Solo project, small change |
 | `/team-retro` | Yes | Optional but recommended — prevents repeat mistakes |
 | `/team-propose` | **No** | Required for all changes |
@@ -54,9 +54,9 @@ See `team-openspec-guard` skill for full format specifications.
 ## File Locations
 
 - OpenSpec artifacts: `openspec/`
-- Commands: `.opencode/commands/`
-- Skills: `.opencode/skills/`
-- Rules: `.opencode/rules/`
+- Commands: `commands/`
+- Skills: `skills/`
+- Rules: `rules/`
 
 ## Bad Case Feedback Loop
 

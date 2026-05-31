@@ -220,7 +220,7 @@ Format:
 ## Gate 4: Task Quality
 
 Every task in `tasks.md` MUST:
-- Be small enough to review (recommend ≤ 1 hour)
+- Be small enough to review (MUST be ≤ 1 hour)
 - Link to a requirement or design decision
 - Be verifiable by test, command, or manual scenario
 - Be ordered by dependency

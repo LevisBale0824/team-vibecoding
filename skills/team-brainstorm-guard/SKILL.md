@@ -109,3 +109,13 @@ After writing brainstorm.md, perform self-review:
 | Writing to docs/superpowers/specs/ | Write to openspec/changes/<change-id>/brainstorm.md |
 | Not following brainstorming skill process | Invoke superpowers:brainstorming and follow its checklist |
 | Finalizing with unresolved hard blockers | Keep hard blockers in Open Questions section |
+
+## Bad Cases
+
+When this skill fails, record in `badCases/` directory:
+- Input: what the user said
+- Wrong output: what the AI did that it shouldn't have
+- Expected output: what it should have done
+- New rule needed: how to prevent recurrence
+
+See `badCases/` for case history.

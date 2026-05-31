@@ -32,10 +32,10 @@ Do NOT use this skill when:
 
 ## Key Rules
 
-- One task at a time
+- Task loop is autonomous — do NOT pause between tasks asking for permission
 - Verify before marking complete
 - Don't do anything out of scope
-- Stop and ask when you hit an issue
+- STOP only for Risk Signals (see `team-implementation-guard`)
 
 ## Examples
 

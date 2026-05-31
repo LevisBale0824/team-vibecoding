@@ -15,13 +15,13 @@ description: Review and strengthen task breakdown before implementation.
 
 - [ ] 1. If `$ARGUMENTS` is empty → run `openspec list` and ASK user to pick
 - [ ] 2. Read all artifacts: proposal.md, design.md (if exists), tasks.md, spec deltas
-- [ ] 4. Check task granularity: each task ≤ 1 hour
-- [ ] 5. Check task dependencies: no circular dependencies, correct ordering
-- [ ] 6. Check verification: every task has a specific command or scenario
-- [ ] 7. Check requirement linkage: every task links to a requirement
-- [ ] 8. Check open questions: all hard blockers resolved?
-- [ ] 9. If tasks need splitting/merging → update tasks.md
-- [ ] 10. Output review summary
+- [ ] 3. Check task granularity: each task ≤ 1 hour
+- [ ] 4. Check task dependencies: no circular dependencies, correct ordering
+- [ ] 5. Check verification: every task has a specific command or scenario
+- [ ] 6. Check requirement linkage: every task links to a requirement
+- [ ] 7. Check open questions: all hard blockers resolved?
+- [ ] 8. If tasks need splitting/merging → update tasks.md
+- [ ] 9. Output review summary
 
 ## 📤 OUTPUT TEMPLATE
 

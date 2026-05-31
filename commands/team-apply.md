@@ -33,10 +33,10 @@ description: Incrementally implement an approved OpenSpec change with TDD and pa
 - [ ] 2. Read: proposal.md, design.md (if exists), tasks.md, all spec deltas
 - [ ] 3. Invoke `superpowers:test-driven-development` skill via Skill tool
 - [ ] 4. Parse tasks.md → build dependency graph
-- [ ] 5. Ask user: execution mode?
-  - **Inline (default)** — execute in current session
-  - **Subagent** — dispatch fresh subagent per task
-  - **Parallel** — dispatch parallel subagents for independent tasks
+- [ ] 5. Auto-detect execution mode from tasks.md:
+  - Analyze task count and dependency graph
+  - Announce: "Using [mode] mode: [reason]"
+  - See `team-implementation-guard` Execution Modes for decision criteria
 - [ ] 6. Execute tasks based on mode:
   - **Inline:** Execute one by one with TDD flow
   - **Subagent:** Dispatch subagent per task (use `superpowers:subagent-driven-development`)

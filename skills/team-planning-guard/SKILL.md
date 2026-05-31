@@ -125,7 +125,7 @@ Example:
 STOP and ask before continuing when:
 - Multiple tasks have circular dependencies
 - Critical dependency missing (e.g., API contract not decided)
-- Task breakdown too coarse (single task > 2 hours)
+- Task breakdown too coarse (single task > 1 hour)
 - Acceptance criteria can't map to specific tasks
 - Deferred tasks > 30% with no clear follow-up plan
 

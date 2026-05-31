@@ -135,7 +135,7 @@ Parse `tasks.md` to build dependency graph:
 
 ## Worktree Management
 
-When executing tasks, consider using Git worktrees for isolation:
+Use Git worktrees for isolation when working on changes. Worktrees prevent cross-change interference.
 
 ### Detection
 
